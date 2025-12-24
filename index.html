@@ -279,33 +279,17 @@
     // 2) Scaling parameters – REPLACE with the exact values from scaler_X.mean_, scaler_X.scale_,
     //    scaler_y.mean_, scaler_y.scale_ printed in your Python notebook for full fidelity.
     const X_MEAN = [
-        0.764,   // Relative Compactness
-        671.71,  // Surface Area
-        318.43,  // Wall Area
-        176.60,  // Roof Area
-        5.25,    // Overall Height
-        3.50,    // Orientation
-        0.234,   // Glazing Area ratio
-        3.00     // Glazing Distribution
+            22.698703, 49.961839, 492.748137, 4.904251, 50.276970, 298.547788, 12.169583, 3.103697
     ];
     const X_STD = [
-        0.095,   // RC
-        85.00,   // SA
-        45.00,   // WA
-        49.00,   // RA
-        1.06,    // OH
-        1.12,    // OR
-        0.123,   // GA
-        1.63     // GAD
+            4.301230, 11.807317, 290.087135, 2.906698, 29.026695, 117.430135, 6.821211, 1.710163
     ];
 
     const Y_MEAN = [
-        29.00,   // Heating Load mean
-        30.17    // Cooling Load mean
+            169.880058, 134.955756
     ];
     const Y_STD = [
-        9.35,    // Heating std
-        9.44     // Cooling std
+            31.607900, 44.547197
     ];
 
     function updateStatus(message, type) {
