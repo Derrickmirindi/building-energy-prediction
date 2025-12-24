@@ -300,7 +300,7 @@
     async function loadModel() {
         try {
             updateStatus('Loading CNN model...', 'loading');
-            cnnModel = await tf.loadLayersModel(MODEL_URL);
+                    cnnModel = await tf.loadLayersModel(MODEL_URL, {strict: false});
             // Warm‑up call (optional)
             const dummy = tf.zeros([1, 8, 1]);
             const out = cnnModel.predict(dummy);
