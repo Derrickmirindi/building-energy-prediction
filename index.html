@@ -270,146 +270,134 @@
 </div>
 
 <script>
-    // 1) URL to the converted TF.js model (update this to your hosting location)
-    // e.g. if model.json is in the same folder as this HTML, use './model.json'
-                const MODEL_URL = './model.json';
-    let cnnModel = null;
+const MODEL_URL = './model.json';
+let cnnModel = null;
 
-    // 2) Scaling parameters – REPLACE with the exact values from scaler_X.mean_, scaler_X.scale_,
-    const X_MEAN = [
-            22.698703, 49.961839, 492.748137, 4.904251, 50.276970, 298.547788, 12.169583, 3.103697
-    ];
-    const X_STD = [
-            4.301230, 11.807317, 290.087135, 2.906698, 29.026695, 117.430135, 6.821211, 1.710163
-    ];
+// Scaling parameters
+const X_MEAN = [22.698703, 49.961839, 492.748137, 4.904251, 50.276970, 298.547788, 12.169583, 3.103697];
+const X_STD  = [4.301230, 11.807317, 290.087135, 2.906698, 29.026695, 117.430135, 6.821211, 1.710163];
+const Y_MEAN = [169.880058, 134.955756];
+const Y_STD  = [31.607900, 44.547197];
 
-    const Y_MEAN = [
-            169.880058, 134.955756
-    ];
-    const Y_STD = [
-            31.607900, 44.547197
-    ];
+const statusEl = document.getElementById('status');
+const predictBtn = document.querySelector('.btn-predict');
+const resultsContainer = document.getElementById('resultsContainer');
 
-    function updateStatus(message, type) {
-        const el = document.getElementById('status');
-        el.textContent = message;
-        el.className = 'status ' + type;
-        el.classList.remove('hidden');
+function updateStatus(message, type) {
+    statusEl.textContent = message;
+    statusEl.className = 'status ' + type;
+    statusEl.classList.remove('hidden');
+}
+
+// Disable predict button until model is loaded
+predictBtn.disabled = true;
+predictBtn.style.opacity = 0.6;
+
+async function loadModel() {
+    try {
+        updateStatus('Loading CNN model...', 'loading');
+
+        // Load model with progress
+        cnnModel = await tf.loadLayersModel(MODEL_URL, {
+            onProgress: (fraction) => {
+                const percent = Math.round(fraction * 100);
+                updateStatus(`Loading CNN model... ${percent}%`, 'loading');
+            },
+            strict: false
+        });
+
+        // Warm-up
+        const dummy = tf.zeros([1, 8, 1]);
+        const out = cnnModel.predict(dummy);
+        if (Array.isArray(out)) out.forEach(t => t.dispose());
+        else out.dispose();
+        dummy.dispose();
+
+        updateStatus('Model loaded! Ready for predictions.', 'success');
+
+        // Enable Predict button
+        predictBtn.disabled = false;
+        predictBtn.style.opacity = 1.0;
+
+    } catch (err) {
+        console.error(err);
+        updateStatus('Error loading model: ' + err.message, 'error');
     }
+}
 
-    async function loadModel() {
-        try {
-            updateStatus('Loading CNN model...', 'loading');
-                    cnnModel = await tf.loadLayersModel(MODEL_URL, {strict: false});
-            // Warm‑up call (optional)
-            const dummy = tf.zeros([1, 8, 1]);
-            const out = cnnModel.predict(dummy);
-            // Model has two outputs (heating and cooling); dispose warm‑up tensors
-            if (Array.isArray(out)) {
-                out.forEach(t => t.dispose());
-            } else {
-                out.dispose();
-            }
-            dummy.dispose();
-            updateStatus('Model loaded. Ready for predictions.', 'success');
-        } catch (err) {
-            console.error(err);
-            updateStatus('Error loading model: ' + err.message, 'error');
+function getInputs() {
+    return [
+        parseFloat(document.getElementById('relativeCompactness').value),
+        parseFloat(document.getElementById('surfaceArea').value),
+        parseFloat(document.getElementById('wallArea').value),
+        parseFloat(document.getElementById('roofArea').value),
+        parseFloat(document.getElementById('overallHeight').value),
+        parseFloat(document.getElementById('orientation').value),
+        parseFloat(document.getElementById('glazingArea').value),
+        parseFloat(document.getElementById('glazingDistribution').value)
+    ];
+}
+
+function standardize(values, meanArr, stdArr) {
+    return values.map((v, i) => (v - meanArr[i]) / stdArr[i]);
+}
+
+function inverseStandardize(values, meanArr, stdArr) {
+    return values.map((z, i) => z * stdArr[i] + meanArr[i]);
+}
+
+document.getElementById('predictionForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    try {
+        if (!cnnModel) return; // Already handled by disabled button
+
+        const vals = getInputs();
+        if (vals.some(v => Number.isNaN(v))) {
+            updateStatus('Please enter valid numeric values for all fields.', 'error');
+            return;
         }
-    }
 
-    function getInputs() {
-        return [
-            parseFloat(document.getElementById('relativeCompactness').value),
-            parseFloat(document.getElementById('surfaceArea').value),
-            parseFloat(document.getElementById('wallArea').value),
-            parseFloat(document.getElementById('roofArea').value),
-            parseFloat(document.getElementById('overallHeight').value),
-            parseFloat(document.getElementById('orientation').value),
-            parseFloat(document.getElementById('glazingArea').value),
-            parseFloat(document.getElementById('glazingDistribution').value)
-        ];
-    }
+        updateStatus('Running CNN inference...', 'loading');
 
-    function standardize(values, meanArr, stdArr) {
-        return values.map((v, i) => (v - meanArr[i]) / stdArr[i]);
-    }
+        const xStd = standardize(vals, X_MEAN, X_STD);
+        const xTensor = tf.tensor3d([xStd.map(v => [v])], [1, 8, 1]);
 
-    function inverseStandardize(values, meanArr, stdArr) {
-        return values.map((z, i) => z * stdArr[i] + meanArr[i]);
-    }
+        const pred = cnnModel.predict(xTensor);
+        let heatingStd, coolingStd;
 
-    document.getElementById('predictionForm').addEventListener('submit', async function (e) {
-        e.preventDefault();
-
-        try {
-            if (!cnnModel) {
-                updateStatus('Model not loaded yet. Please wait a moment and try again.', 'error');
-                return;
-            }
-
-            const vals = getInputs();
-            if (vals.some(v => Number.isNaN(v))) {
-                updateStatus('Please enter valid numeric values for all fields.', 'error');
-                return;
-            }
-
-            updateStatus('Running CNN inference...', 'loading');
-
-            // Standardize inputs
-            const xStd = standardize(vals, X_MEAN, X_STD);
-
-            // Create tensor of shape [1, 8, 1] as in Python (batch, sequence_len, channels)
-            const xTensor = tf.tensor3d(
-                [xStd.map(v => [v])],  // wrap each feature in [v] to make channel dimension
-                [1, 8, 1]
-            );
-
-            // Predict – model has two outputs (heating, cooling), each of shape [1, 1]
-            const pred = cnnModel.predict(xTensor);
-
-            let heatingStd, coolingStd;
-            if (Array.isArray(pred)) {
-                const hArr = await pred[0].data();
-                const cArr = await pred[1].data();
-                heatingStd = hArr[0];
-                coolingStd = cArr[0];
-                pred.forEach(t => t.dispose());
-            } else {
-                // If you exported as a single 2‑unit output layer instead of two heads
-                const arr = await pred.data();
-                heatingStd = arr[0];
-                coolingStd = arr[1];
-                pred.dispose();
-            }
-            xTensor.dispose();
-
-            // Inverse standardization to kWh/m²
-            const [heating, cooling] = inverseStandardize(
-                [heatingStd, coolingStd],
-                Y_MEAN,
-                Y_STD
-            );
-
-            // Clip to dataset‑plausible ranges
-            const heatingClipped = Math.min(Math.max(heating, 6.0), 45.0);
-            const coolingClipped = Math.min(Math.max(cooling, 11.0), 48.0);
-
-            document.getElementById('heatingResult').textContent = heatingClipped.toFixed(2);
-            document.getElementById('coolingResult').textContent = coolingClipped.toFixed(2);
-            document.getElementById('resultsContainer').classList.remove('hidden');
-
-            updateStatus(
-                `Prediction complete | Heating: ${heatingClipped.toFixed(2)} kWh/m² | Cooling: ${coolingClipped.toFixed(2)} kWh/m²`,
-                'success'
-            );
-        } catch (err) {
-            console.error(err);
-            updateStatus('Prediction error: ' + err.message, 'error');
+        if (Array.isArray(pred)) {
+            const hArr = await pred[0].data();
+            const cArr = await pred[1].data();
+            heatingStd = hArr[0];
+            coolingStd = cArr[0];
+            pred.forEach(t => t.dispose());
+        } else {
+            const arr = await pred.data();
+            heatingStd = arr[0];
+            coolingStd = arr[1];
+            pred.dispose();
         }
-    });
 
-    window.addEventListener('load', loadModel);
+        xTensor.dispose();
+
+        const [heating, cooling] = inverseStandardize([heatingStd, coolingStd], Y_MEAN, Y_STD);
+        const heatingClipped = Math.min(Math.max(heating, 6.0), 45.0);
+        const coolingClipped = Math.min(Math.max(cooling, 11.0), 48.0);
+
+        document.getElementById('heatingResult').textContent = heatingClipped.toFixed(2);
+        document.getElementById('coolingResult').textContent = coolingClipped.toFixed(2);
+        resultsContainer.classList.remove('hidden');
+
+        updateStatus(`Prediction complete | Heating: ${heatingClipped.toFixed(2)} kWh/m² | Cooling: ${coolingClipped.toFixed(2)} kWh/m²`, 'success');
+
+    } catch (err) {
+        console.error(err);
+        updateStatus('Prediction error: ' + err.message, 'error');
+    }
+});
+
+// Load model on page load
+window.addEventListener('load', loadModel);
 </script>
 </body>
 </html>
