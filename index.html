@@ -47,9 +47,9 @@
         .info-section h3 {
             color: #667eea;
             margin-bottom: 6px;
-            font-size: 1.12em;
+            font-size: 1.3em;
         }
-        .info-section p { color: #555; line-height: 1.6; font-size: 0.95em; }
+        .info-section p { color: #555; line-height: 1.6; font-size: 1.1em; }
 
         .form-container {
             display: grid;
@@ -62,13 +62,13 @@
             font-weight: bold;
             color: #333;
             margin-bottom: 6px;
-            font-size: 0.93em;
+            font-size: 1.05em;
         }
         .form-group input {
-            padding: 9px 10px;
+            padding: 6px 8px;
             border: 2px solid #e0e0e0;
             border-radius: 6px;
-            font-size: 0.96em;
+            font-size: 1.0em;
             font-family: 'Times New Roman', serif;
             transition: border-color 0.25s;
         }
@@ -79,7 +79,7 @@
         }
         .form-group small {
             color: #888;
-            font-size: 0.8em;
+            font-size: 0.9em;
             margin-top: 4px;
         }
 
@@ -91,7 +91,7 @@
         }
         button {
             padding: 12px 22px;
-            font-size: 0.98em;
+            font-size: 1.1em;
             font-weight: bold;
             border: none;
             border-radius: 8px;
@@ -119,7 +119,7 @@
             margin-top: 10px;
             font-weight: bold;
             text-align: center;
-            font-size: 0.9em;
+            font-size: 1.0em;
         }
         .status.loading { background: #fff3cd; color: #856404; }
         .status.success { background: #d4edda; color: #155724; }
@@ -146,9 +146,9 @@
         .result-card.cooling {
             background: linear-gradient(135deg, #d0e8f2 0%, #a8d8ea 100%);
         }
-        .result-card h3 { color: #333; margin-bottom: 10px; font-size: 1.18em; }
-        .result-value   { font-size: 2.1em; font-weight: bold; color: #1f3a93; margin: 8px 0; }
-        .result-unit    { font-size: 0.95em; color: #444; }
+        .result-card h3 { color: #333; margin-bottom: 10px; font-size: 1.3em; }
+        .result-value   { font-size: 2.3em; font-weight: bold; color: #1f3a93; margin: 8px 0; }
+        .result-unit    { font-size: 1.05em; color: #444; }
 
         .model-info {
             background: #f0f4f8;
@@ -157,8 +157,24 @@
             margin-top: 28px;
             border: 2px solid #667eea;
         }
-        .model-info h4 { color: #667eea; margin-bottom: 8px; font-size: 1.05em; }
-        .model-info p  { color: #555; margin-bottom: 6px; font-size: 0.9em; line-height: 1.5; }
+        .model-info h4 { color: #667eea; margin-bottom: 8px; font-size: 1.15em; }
+        .model-info p  { color: #555; margin-bottom: 6px; font-size: 1.0em; line-height: 1.5; }
+
+        .metrics {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 8px;
+        }
+        .metric {
+            background: #ffffff;
+            padding: 9px 10px;
+            border-radius: 6px;
+            text-align: center;
+            border-left: 4px solid #667eea;
+        }
+        .metric-label { color: #666; font-size: 0.9em; margin-bottom: 3px; }
+        .metric-value { font-size: 1.2em; font-weight: bold; color: #334296; }
 
         @media (max-width: 800px) {
             .form-container { grid-template-columns: 1fr; }
@@ -172,56 +188,52 @@
 <div class="container">
     <div class="header">
         <h1>Building Energy Prediction</h1>
-        <p>MLP - Browser Inference</p>
     </div>
 
     <div class="content">
         <div class="info-section">
-            <h3>Model description</h3>
-            <p><strong>Back-end architecture:</strong> Multi-Layer Perceptron (MLP) trained on the UCI energy efficiency dataset (Athens, Greece).</p>
-            <p><strong>Front‑end:</strong> this page loads the converted Keras model (<code>model.json</code>) via TensorFlow.js and applies the same standardization and inverse‑transform as in the Python script using <code>scaler_params.json</code>, so predictions match the original training pipeline.</p>
-        </div>
+            <h3>Convolution Neural Network (CNN) Model</h3>
 
         <form id="predictionForm">
             <div class="form-container">
                 <div class="form-group">
-                    <label for="relativeCompactness">Relative Compactness</label>
-                    <input type="number" id="relativeCompactness" step="0.01" min="0" value="0.79" required>
+                    <label for="relativeCompactness">Relative Compactness (dimensionless)</label>
+                    <input type="number" id="relativeCompactness" step="0.01" min="0" required>
                     <small>0.62 – 0.98</small>
                 </div>
                 <div class="form-group">
                     <label for="surfaceArea">Surface Area (m²)</label>
-                    <input type="number" id="surfaceArea" step="0.1" min="0" value="637.0" required>
+                    <input type="number" id="surfaceArea" step="0.01" min="0" required>
                     <small>≈ 514.5 – 808.0</small>
                 </div>
                 <div class="form-group">
                     <label for="wallArea">Wall Area (m²)</label>
-                    <input type="number" id="wallArea" step="0.1" min="0" value="318.5" required>
+                    <input type="number" id="wallArea" step="0.01" min="0" required>
                     <small>≈ 245.0 – 416.5</small>
                 </div>
                 <div class="form-group">
                     <label for="roofArea">Roof Area (m²)</label>
-                    <input type="number" id="roofArea" step="0.1" min="0" value="147.0" required>
+                    <input type="number" id="roofArea" step="0.1" min="0" required>
                     <small>≈ 110.25 – 220.50</small>
                 </div>
                 <div class="form-group">
                     <label for="overallHeight">Overall Height (m)</label>
-                    <input type="number" id="overallHeight" step="0.1" min="0" value="7.0" required>
+                    <input type="number" id="overallHeight" step="0.1" min="0" required>
                     <small>3.5 or 7.0 in dataset</small>
                 </div>
                 <div class="form-group">
-                    <label for="orientation">Orientation (code)</label>
-                    <input type="number" id="orientation" step="1" min="2" max="5" value="3" required>
+                    <label for="orientation">Orientation (dimensionless)</label>
+                    <input type="number" id="orientation" step="1" min="2" max="5" required>
                     <small>2, 3, 4, 5 (cardinal orientations)</small>
                 </div>
                 <div class="form-group">
-                    <label for="glazingArea">Glazing Area (ratio)</label>
-                    <input type="number" id="glazingArea" step="0.01" min="0" max="0.4" value="0.25" required>
+                    <label for="glazingArea">Glazing Area (dimensionless)</label>
+                    <input type="number" id="glazingArea" step="0.01" min="0" max="0.4" required>
                     <small>0.0 – 0.4 façade glazed</small>
                 </div>
                 <div class="form-group">
-                    <label for="glazingDistribution">Glazing Area Distribution</label>
-                    <input type="number" id="glazingDistribution" step="1" min="0" max="5" value="3" required>
+                    <label for="glazingDistribution">Glazing Area Distribution (dimensionless)</label>
+                    <input type="number" id="glazingDistribution" step="1" min="0" max="5" required>
                     <small>0 = none, 1–5 = patterns</small>
                 </div>
             </div>
@@ -247,19 +259,14 @@
             </div>
         </div>
 
-        <div class="model-info">
-            <h4>Reproducibility notes</h4>
-            <p><strong>Scaling:</strong> inputs and outputs are standardized with the same means and standard deviations as in the Python script (scikit‑learn <code>StandardScaler</code>) loaded from <code>scaler_params.json</code>, then inverse‑transformed to physical units for display.</p>
-            <p><strong>Workflow:</strong> train and validate in Python, save model, convert to TF.js, and serve <code>model.json</code> with this HTML page for interactive use.</p>
-        </div>
+
     </div>
 </div>
 
 <script>
 const MODEL_URL = './model.json';
-const SCALER_URL = './scaler_params.json';
 const INDEXEDDB_KEY = 'indexeddb://building-energy-mlp';
-let mlpModel = null;
+let cnnModel = null;
 let scaler = null;
 let modelReady = false;
 let scalerReady = false;
@@ -308,10 +315,9 @@ async function initBackend() {
 async function loadScaler() {
     try {
         updateStatus('Loading scaler parameters...', 'loading');
-        const resp = await fetch(SCALER_URL);
+        const resp = await fetch('./scaler_params.json');
         scaler = await resp.json();
         scalerReady = true;
-        console.log('Scaler loaded:', scaler);
         updateStatus('Scaler parameters loaded.', 'success');
         maybeEnablePredict();
     } catch (err) {
@@ -328,12 +334,12 @@ async function loadModel() {
         // Try to load from IndexedDB cache first (fast on repeat visits)
         updateStatus('Loading model from cache...', 'loading');
         try {
-            mlpModel = await tf.loadLayersModel(INDEXEDDB_KEY);
+            cnnModel = await tf.loadLayersModel(INDEXEDDB_KEY);
             updateStatus('Model loaded from cache.', 'success');
         } catch (cacheErr) {
             // Fallback: load from URL and then cache it
             updateStatus('Downloading model...', 'loading');
-            mlpModel = await tf.loadLayersModel(MODEL_URL, {
+            cnnModel = await tf.loadLayersModel(MODEL_URL, {
                 onProgress: (fraction) => {
                     const percent = Math.round(fraction * 100);
                     updateStatus(`Downloading model... ${percent}%`, 'loading');
@@ -341,7 +347,7 @@ async function loadModel() {
                 strict: false
             });
             try {
-                await mlpModel.save(INDEXEDDB_KEY);
+                await cnnModel.save(INDEXEDDB_KEY);
                 updateStatus('Model cached locally for faster future loads.', 'success');
             } catch (saveErr) {
                 console.warn('Failed to cache model:', saveErr);
@@ -350,14 +356,11 @@ async function loadModel() {
 
         // Warm-up prediction (correct input shape for MLP: [batch, 8])
         const dummy = tf.zeros([1, 8]);
-        const out = mlpModel.predict(dummy);
+        const out = cnnModel.predict(dummy);
         if (Array.isArray(out)) out.forEach(t => t.dispose());
         else out.dispose();
         dummy.dispose();
 
-        console.log('Model loaded successfully');
-        console.log('Model inputs:', mlpModel.inputs);
-        console.log('Model outputs:', mlpModel.outputs);
         modelReady = true;
         maybeEnablePredict();
 
@@ -391,7 +394,7 @@ function inverseStandardize(values, meanArr, stdArr) {
 document.getElementById('predictionForm').addEventListener('submit', async function(e) {
     e.preventDefault();
     try {
-        if (!mlpModel || !scaler) {
+        if (!cnnModel || !scaler) {
             updateStatus('Please wait for the model and scaler to finish loading.', 'error');
             return;
         }
@@ -404,26 +407,28 @@ document.getElementById('predictionForm').addEventListener('submit', async funct
 
         updateStatus('Running inference...', 'loading');
 
-        // Standardize inputs
         const xStd = standardize(vals, scaler.X_mean, scaler.X_std);
         const xTensor = tf.tensor2d([xStd], [1, 8]);
 
-        // Make prediction - model returns single tensor with shape [1, 2]
-        const pred = mlpModel.predict(xTensor);
-        
-        // Get output values [heating_scaled, cooling_scaled]
-        const output = await pred.data();
-        const heatingStd = output[0];
-        const coolingStd = output[1];
-        
-        // Clean up
-        xTensor.dispose();
-        pred.dispose();
+        const pred = cnnModel.predict(xTensor);
+        let heatingStd, coolingStd;
 
-        // Inverse transform to get actual values
+        if (Array.isArray(pred)) {
+            const hArr = await pred[0].data();
+            const cArr = await pred[1].data();
+            heatingStd = hArr[0];
+            coolingStd = cArr[0];
+            pred.forEach(t => t.dispose());
+        } else {
+            const arr = await pred.data();
+            heatingStd = arr[0];
+            coolingStd = arr[1];
+            pred.dispose();
+        }
+
+        xTensor.dispose();
+
         const [heating, cooling] = inverseStandardize([heatingStd, coolingStd], scaler.Y_mean, scaler.Y_std);
-        
-        // Optional: clip to reasonable ranges
         const heatingClipped = Math.min(Math.max(heating, 6.0), 45.0);
         const coolingClipped = Math.min(Math.max(cooling, 11.0), 48.0);
 
@@ -441,44 +446,6 @@ document.getElementById('predictionForm').addEventListener('submit', async funct
 
 // Load model & scaler on page load
 window.addEventListener('load', () => { loadScaler(); loadModel(); });
-
-// Helper: predict from a simple array of 8 features
-async function predictFromArray(inputFeatures) {
-    if (!mlpModel || !scaler) {
-        throw new Error('Model or scaler not loaded yet');
-    }
-    if (!Array.isArray(inputFeatures) || inputFeatures.length !== 8) {
-        throw new Error('inputFeatures must be an array of 8 numbers');
-    }
-
-    const xStd = standardize(inputFeatures, scaler.X_mean, scaler.X_std);
-    const xTensor = tf.tensor2d([xStd], [1, 8]);
-    const pred = mlpModel.predict(xTensor);
-    
-    const output = await pred.data();
-    const heatingStd = output[0];
-    const coolingStd = output[1];
-    
-    xTensor.dispose();
-    pred.dispose();
-
-    const [heating, cooling] = inverseStandardize([heatingStd, coolingStd], scaler.Y_mean, scaler.Y_std);
-    const heatingClipped = Math.min(Math.max(heating, 6.0), 45.0);
-    const coolingClipped = Math.min(Math.max(cooling, 11.0), 48.0);
-
-    return { heating: heatingClipped, cooling: coolingClipped };
-}
-
-// Example usage exposed for convenience
-async function examplePrediction() {
-    const testInput = [0.79, 637.0, 318.5, 147.0, 7.0, 3.0, 0.25, 3.0];
-    const result = await predictFromArray(testInput);
-    console.log('Predicted Heating Load:', result.heating.toFixed(2));
-    console.log('Predicted Cooling Load:', result.cooling.toFixed(2));
-}
-
-window.predictFromArray = predictFromArray;
-window.examplePrediction = examplePrediction;
 </script>
 </body>
 </html>
