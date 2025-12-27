@@ -40,6 +40,5 @@
   "target_names": [
     "Heating Load",
     "Cooling Load"
-  ],
-  "model_type": "MLP"
+  ]
 }

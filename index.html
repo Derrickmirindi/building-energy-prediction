@@ -3,10 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Building Energy Prediction – Residual 1D‑CNN</title>
+    <title>Building Energy Prediction – MLP</title>
 
     <!-- Load TensorFlow.js (Layers API, needed for loadLayersModel) -->
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js"></script>
+    <!-- Optional: WASM backend for broader compatibility fallback -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-wasm@4.22.0/dist/tf-backend-wasm.min.js"></script>
 
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -158,22 +160,6 @@
         .model-info h4 { color: #667eea; margin-bottom: 8px; font-size: 1.05em; }
         .model-info p  { color: #555; margin-bottom: 6px; font-size: 0.9em; line-height: 1.5; }
 
-        .metrics {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-top: 8px;
-        }
-        .metric {
-            background: #ffffff;
-            padding: 9px 10px;
-            border-radius: 6px;
-            text-align: center;
-            border-left: 4px solid #667eea;
-        }
-        .metric-label { color: #666; font-size: 0.8em; margin-bottom: 3px; }
-        .metric-value { font-size: 1.1em; font-weight: bold; color: #334296; }
-
         @media (max-width: 800px) {
             .form-container { grid-template-columns: 1fr; }
             .results-container { grid-template-columns: 1fr; }
@@ -186,56 +172,56 @@
 <div class="container">
     <div class="header">
         <h1>Building Energy Prediction</h1>
-                    <p>Residual 1D-CNN - Browser Inference</p>
+        <p>MLP - Browser Inference</p>
     </div>
 
     <div class="content">
         <div class="info-section">
             <h3>Model description</h3>
-                            <p><strong>Back-end architecture:</strong> Residual 1D-CNN trained on the UCI energy efficiency dataset (Athens, Greece).</p>
-            <p><strong>Front‑end:</strong> this page loads the exact converted Keras model (<code>model.json</code>) via TensorFlow.js and applies the same standardization and inverse‑transform as in the Python script, so predictions match the original CNN up to numerical precision.</p>
+            <p><strong>Back-end architecture:</strong> Multi-Layer Perceptron (MLP) trained on the UCI energy efficiency dataset (Athens, Greece).</p>
+            <p><strong>Front‑end:</strong> this page loads the converted Keras model (<code>model.json</code>) via TensorFlow.js and applies the same standardization and inverse‑transform as in the Python script using <code>scaler_params.json</code>, so predictions match the original training pipeline.</p>
         </div>
 
         <form id="predictionForm">
             <div class="form-container">
                 <div class="form-group">
                     <label for="relativeCompactness">Relative Compactness</label>
-                    <input type="number" id="relativeCompactness" step="0.01" min="0" required>
+                    <input type="number" id="relativeCompactness" step="0.01" min="0" value="0.79" required>
                     <small>0.62 – 0.98</small>
                 </div>
                 <div class="form-group">
                     <label for="surfaceArea">Surface Area (m²)</label>
-                    <input type="number" id="surfaceArea" step="0.1" min="0" required>
+                    <input type="number" id="surfaceArea" step="0.1" min="0" value="637.0" required>
                     <small>≈ 514.5 – 808.0</small>
                 </div>
                 <div class="form-group">
                     <label for="wallArea">Wall Area (m²)</label>
-                    <input type="number" id="wallArea" step="0.1" min="0" required>
+                    <input type="number" id="wallArea" step="0.1" min="0" value="318.5" required>
                     <small>≈ 245.0 – 416.5</small>
                 </div>
                 <div class="form-group">
                     <label for="roofArea">Roof Area (m²)</label>
-                    <input type="number" id="roofArea" step="0.1" min="0" required>
+                    <input type="number" id="roofArea" step="0.1" min="0" value="147.0" required>
                     <small>≈ 110.25 – 220.50</small>
                 </div>
                 <div class="form-group">
                     <label for="overallHeight">Overall Height (m)</label>
-                    <input type="number" id="overallHeight" step="0.1" min="0" required>
+                    <input type="number" id="overallHeight" step="0.1" min="0" value="7.0" required>
                     <small>3.5 or 7.0 in dataset</small>
                 </div>
                 <div class="form-group">
                     <label for="orientation">Orientation (code)</label>
-                    <input type="number" id="orientation" step="1" min="2" max="5" required>
+                    <input type="number" id="orientation" step="1" min="2" max="5" value="3" required>
                     <small>2, 3, 4, 5 (cardinal orientations)</small>
                 </div>
                 <div class="form-group">
                     <label for="glazingArea">Glazing Area (ratio)</label>
-                    <input type="number" id="glazingArea" step="0.01" min="0" max="0.4" required>
+                    <input type="number" id="glazingArea" step="0.01" min="0" max="0.4" value="0.25" required>
                     <small>0.0 – 0.4 façade glazed</small>
                 </div>
                 <div class="form-group">
                     <label for="glazingDistribution">Glazing Area Distribution</label>
-                    <input type="number" id="glazingDistribution" step="1" min="0" max="5" required>
+                    <input type="number" id="glazingDistribution" step="1" min="0" max="5" value="3" required>
                     <small>0 = none, 1–5 = patterns</small>
                 </div>
             </div>
@@ -263,21 +249,20 @@
 
         <div class="model-info">
             <h4>Reproducibility notes</h4>
-            <p><strong>Scaling:</strong> inputs and outputs are standardized with the same means and standard deviations as in the Python script (scikit‑learn <code>StandardScaler</code>), then inverse‑transformed to physical units for display.</p>
-            <p><strong>Workflow:</strong> train and validate in Python, save <code>best_cnn_energy_model.h5</code>, convert to TF.js, and serve <code>model.json</code> with this HTML page for interactive use.</p>
+            <p><strong>Scaling:</strong> inputs and outputs are standardized with the same means and standard deviations as in the Python script (scikit‑learn <code>StandardScaler</code>) loaded from <code>scaler_params.json</code>, then inverse‑transformed to physical units for display.</p>
+            <p><strong>Workflow:</strong> train and validate in Python, save model, convert to TF.js, and serve <code>model.json</code> with this HTML page for interactive use.</p>
         </div>
     </div>
 </div>
 
 <script>
 const MODEL_URL = './model.json';
-let cnnModel = null;
-
-// Scaling parameters
-const X_MEAN = [22.698703, 49.961839, 492.748137, 4.904251, 50.276970, 298.547788, 12.169583, 3.103697];
-const X_STD  = [4.301230, 11.807317, 290.087135, 2.906698, 29.026695, 117.430135, 6.821211, 1.710163];
-const Y_MEAN = [169.880058, 134.955756];
-const Y_STD  = [31.607900, 44.547197];
+const SCALER_URL = './scaler_params.json';
+const INDEXEDDB_KEY = 'indexeddb://building-energy-mlp';
+let mlpModel = null;
+let scaler = null;
+let modelReady = false;
+let scalerReady = false;
 
 const statusEl = document.getElementById('status');
 const predictBtn = document.querySelector('.btn-predict');
@@ -289,35 +274,92 @@ function updateStatus(message, type) {
     statusEl.classList.remove('hidden');
 }
 
-// Disable predict button until model is loaded
+function maybeEnablePredict() {
+    if (modelReady && scalerReady) {
+        predictBtn.disabled = false;
+        predictBtn.style.opacity = 1.0;
+        updateStatus('Model and scaler loaded! Ready for predictions.', 'success');
+    }
+}
+
+// Disable predict button until model & scaler are loaded
 predictBtn.disabled = true;
 predictBtn.style.opacity = 0.6;
 
+async function initBackend() {
+    try {
+        await tf.setBackend('webgl');
+        updateStatus('Using WebGL backend for faster inference.', 'loading');
+    } catch (e) {
+        try {
+            if (tf.wasm && tf.wasm.setWasmPaths) {
+                tf.wasm.setWasmPaths('https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-wasm@4.22.0/dist/');
+            }
+            await tf.setBackend('wasm');
+            updateStatus('WebGL unavailable, using WASM backend.', 'loading');
+        } catch (err) {
+            await tf.setBackend('cpu');
+            updateStatus('Falling back to CPU backend.', 'loading');
+        }
+    }
+    await tf.ready();
+}
+
+async function loadScaler() {
+    try {
+        updateStatus('Loading scaler parameters...', 'loading');
+        const resp = await fetch(SCALER_URL);
+        scaler = await resp.json();
+        scalerReady = true;
+        console.log('Scaler loaded:', scaler);
+        updateStatus('Scaler parameters loaded.', 'success');
+        maybeEnablePredict();
+    } catch (err) {
+        console.error(err);
+        updateStatus('Error loading scaler parameters: ' + err.message, 'error');
+    }
+}
+
 async function loadModel() {
     try {
-        updateStatus('Loading CNN model...', 'loading');
+        updateStatus('Initializing TensorFlow.js...', 'loading');
+        await initBackend();
 
-        // Load model with progress
-        cnnModel = await tf.loadLayersModel(MODEL_URL, {
-            onProgress: (fraction) => {
-                const percent = Math.round(fraction * 100);
-                updateStatus(`Loading CNN model... ${percent}%`, 'loading');
-            },
-            strict: false
-        });
+        // Try to load from IndexedDB cache first (fast on repeat visits)
+        updateStatus('Loading model from cache...', 'loading');
+        try {
+            mlpModel = await tf.loadLayersModel(INDEXEDDB_KEY);
+            updateStatus('Model loaded from cache.', 'success');
+        } catch (cacheErr) {
+            // Fallback: load from URL and then cache it
+            updateStatus('Downloading model...', 'loading');
+            mlpModel = await tf.loadLayersModel(MODEL_URL, {
+                onProgress: (fraction) => {
+                    const percent = Math.round(fraction * 100);
+                    updateStatus(`Downloading model... ${percent}%`, 'loading');
+                },
+                strict: false
+            });
+            try {
+                await mlpModel.save(INDEXEDDB_KEY);
+                updateStatus('Model cached locally for faster future loads.', 'success');
+            } catch (saveErr) {
+                console.warn('Failed to cache model:', saveErr);
+            }
+        }
 
-        // Warm-up
-        const dummy = tf.zeros([1, 8, 1]);
-        const out = cnnModel.predict(dummy);
+        // Warm-up prediction (correct input shape for MLP: [batch, 8])
+        const dummy = tf.zeros([1, 8]);
+        const out = mlpModel.predict(dummy);
         if (Array.isArray(out)) out.forEach(t => t.dispose());
         else out.dispose();
         dummy.dispose();
 
-        updateStatus('Model loaded! Ready for predictions.', 'success');
-
-        // Enable Predict button
-        predictBtn.disabled = false;
-        predictBtn.style.opacity = 1.0;
+        console.log('Model loaded successfully');
+        console.log('Model inputs:', mlpModel.inputs);
+        console.log('Model outputs:', mlpModel.outputs);
+        modelReady = true;
+        maybeEnablePredict();
 
     } catch (err) {
         console.error(err);
@@ -349,7 +391,10 @@ function inverseStandardize(values, meanArr, stdArr) {
 document.getElementById('predictionForm').addEventListener('submit', async function(e) {
     e.preventDefault();
     try {
-        if (!cnnModel) return; // Already handled by disabled button
+        if (!mlpModel || !scaler) {
+            updateStatus('Please wait for the model and scaler to finish loading.', 'error');
+            return;
+        }
 
         const vals = getInputs();
         if (vals.some(v => Number.isNaN(v))) {
@@ -357,30 +402,28 @@ document.getElementById('predictionForm').addEventListener('submit', async funct
             return;
         }
 
-        updateStatus('Running CNN inference...', 'loading');
+        updateStatus('Running inference...', 'loading');
 
-        const xStd = standardize(vals, X_MEAN, X_STD);
-        const xTensor = tf.tensor3d([xStd.map(v => [v])], [1, 8, 1]);
+        // Standardize inputs
+        const xStd = standardize(vals, scaler.X_mean, scaler.X_std);
+        const xTensor = tf.tensor2d([xStd], [1, 8]);
 
-        const pred = cnnModel.predict(xTensor);
-        let heatingStd, coolingStd;
-
-        if (Array.isArray(pred)) {
-            const hArr = await pred[0].data();
-            const cArr = await pred[1].data();
-            heatingStd = hArr[0];
-            coolingStd = cArr[0];
-            pred.forEach(t => t.dispose());
-        } else {
-            const arr = await pred.data();
-            heatingStd = arr[0];
-            coolingStd = arr[1];
-            pred.dispose();
-        }
-
+        // Make prediction - model returns single tensor with shape [1, 2]
+        const pred = mlpModel.predict(xTensor);
+        
+        // Get output values [heating_scaled, cooling_scaled]
+        const output = await pred.data();
+        const heatingStd = output[0];
+        const coolingStd = output[1];
+        
+        // Clean up
         xTensor.dispose();
+        pred.dispose();
 
-        const [heating, cooling] = inverseStandardize([heatingStd, coolingStd], Y_MEAN, Y_STD);
+        // Inverse transform to get actual values
+        const [heating, cooling] = inverseStandardize([heatingStd, coolingStd], scaler.Y_mean, scaler.Y_std);
+        
+        // Optional: clip to reasonable ranges
         const heatingClipped = Math.min(Math.max(heating, 6.0), 45.0);
         const coolingClipped = Math.min(Math.max(cooling, 11.0), 48.0);
 
@@ -396,8 +439,46 @@ document.getElementById('predictionForm').addEventListener('submit', async funct
     }
 });
 
-// Load model on page load
-window.addEventListener('load', loadModel);
+// Load model & scaler on page load
+window.addEventListener('load', () => { loadScaler(); loadModel(); });
+
+// Helper: predict from a simple array of 8 features
+async function predictFromArray(inputFeatures) {
+    if (!mlpModel || !scaler) {
+        throw new Error('Model or scaler not loaded yet');
+    }
+    if (!Array.isArray(inputFeatures) || inputFeatures.length !== 8) {
+        throw new Error('inputFeatures must be an array of 8 numbers');
+    }
+
+    const xStd = standardize(inputFeatures, scaler.X_mean, scaler.X_std);
+    const xTensor = tf.tensor2d([xStd], [1, 8]);
+    const pred = mlpModel.predict(xTensor);
+    
+    const output = await pred.data();
+    const heatingStd = output[0];
+    const coolingStd = output[1];
+    
+    xTensor.dispose();
+    pred.dispose();
+
+    const [heating, cooling] = inverseStandardize([heatingStd, coolingStd], scaler.Y_mean, scaler.Y_std);
+    const heatingClipped = Math.min(Math.max(heating, 6.0), 45.0);
+    const coolingClipped = Math.min(Math.max(cooling, 11.0), 48.0);
+
+    return { heating: heatingClipped, cooling: coolingClipped };
+}
+
+// Example usage exposed for convenience
+async function examplePrediction() {
+    const testInput = [0.79, 637.0, 318.5, 147.0, 7.0, 3.0, 0.25, 3.0];
+    const result = await predictFromArray(testInput);
+    console.log('Predicted Heating Load:', result.heating.toFixed(2));
+    console.log('Predicted Cooling Load:', result.cooling.toFixed(2));
+}
+
+window.predictFromArray = predictFromArray;
+window.examplePrediction = examplePrediction;
 </script>
 </body>
 </html>
