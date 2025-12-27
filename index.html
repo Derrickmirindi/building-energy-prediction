@@ -19,8 +19,7 @@
             padding: 20px;
         }
         .container {
-            max-width: 300px;            margin: 0 auto;
-            background: #ffffff;
+            max-width: 280px;            background: #ffffff;
             border-radius: 20px;
             box-shadow: 0 20px 60px rgba(0,0,0,0.4);
             overflow: hidden;
@@ -56,14 +55,12 @@
             gap: 12px;
             margin-bottom: 20px;
         }
-        .form-group { display: flex; flex-direction: row; align-items: center; gap: 10px; }
-        .form-group label {
+        .form-group { display: flex; flex-direction: column; align-items: center; gap: 5px; text-align: center; }        .form-group label {
             font-weight: 600;
             color: #333;
             font-size: 0.85em;
             flex: 1;
-            text-align: right;
-        }
+            text-align: center;        }
         .form-group input {
             width: 120px;
             padding: 4px 8px;
@@ -72,8 +69,7 @@
             font-size: 0.95em;
             font-family: 'Times New Roman', serif;
             transition: border-color 0.25s;
-            text-align: right;
-            background: #fafafa;
+            text-align: center;            background: #fafafa;
         }
         .form-group input:focus {
             outline: none;
@@ -85,8 +81,7 @@
             font-size: 0.7em;
             font-style: italic;
             width: 120px;
-            text-align: right;
-        }
+            text-align: center;        }
 
         .button-group {
             display: grid;
@@ -453,8 +448,23 @@ document.getElementById('predictionForm').addEventListener('submit', async funct
 // Load model & scaler on page load
 window.addEventListener('load', () => { loadScaler(); loadModel(); });
 </script>
+
+            <div style="text-align: center; padding: 20px 15px; border-top: 2px solid #e0e0e0; margin-top: 20px;">
+        <p style="font-size: 0.85em; color: #555; line-height: 1.6;">
+            This web application uses a trained Convolutional Neural Network (CNN)<br>
+            to predict building heating and cooling loads<br>
+            from eight design parameters.<br>
+            It provides fast estimates of the loads in kWh/m² and<br>
+            serves as a decision support tool for building<br>
+            and HVAC design.
+        </p>
+        <p style="font-size: 0.9em; color: #667eea; font-weight: 600; margin-top: 15px;">
+            Developed by Derrick Mirindi
+        </p>
+    </div>
 </body>
 </html>
+
 
 
 
