@@ -189,7 +189,7 @@ flex-direction: row    flex-direction: row
 
     <div class="content">
         <div class="info-section">
-            <h3>Convolution Neural Network (CNN) Model</h3>
+            <h3>Convolutional Neural Network (CNN) Model</h3>
 
         <form id="predictionForm">
             <div class="form-container">
@@ -446,20 +446,24 @@ window.addEventListener('load', () => { loadScaler(); loadModel(); });
 </script>
 
             <div style="text-align: center; padding: 20px 15px; border-top: 2px solid #e0e0e0; margin-top: 20px;">
-        <p style="font-size: 0.85em; color: #555; line-height: 1.6;">
-            This web application uses a trained Convolutional Neural Network (CNN)<br>
+                <p style="font-size: 0.85em; color: white; line-height: 1.6;">            This web application uses a trained Convolutional Neural Network (CNN)<br>
             to predict building heating and cooling loads<br>
             from eight design parameters.<br>
             It provides fast estimates of the loads in kWh/m² and<br>
             serves as a decision support tool for building<br>
             and HVAC design.
         </p>
+                
+                <p style="font-size: 0.85em; color: white; line-height: 1.6;">
+                    The model was trained on data defined over specific value ranges, so users should enter numerical values only within the indicated intervals for each input parameter. Predicted heating and cooling loads represent annual energy use in kWh/m² per year.
+                </p>
         <p style="font-size: 0.9em; color: ##5568ff; font-weight: 600; margin-top: 15px;">
             Developed by Derrick Mirindi
         </p>
     </div>
 </body>
 </html>
+
 
 
 
