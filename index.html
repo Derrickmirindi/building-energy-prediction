@@ -207,11 +207,13 @@ flex-direction: row    flex-direction: row
                 </div>
                 <div class="form-group">
                     <label for="roofArea">Roof Area (m²)</label>
-                            <input type="number" id="wallArea" step="0.01" min="110.25" max="220.25" required>                    <small>≈ 110.25 – 220.50</small>
+                            <input type="number" id="roofArea" step="0.1" min="110.25" max="220.50" required>                    <small>≈ 110.25 – 220.50</small>
                 </div>
-                        <div class="form-group">
-                            <label for="overallHeight">Overall Height (m)</label>
-                                                        <input type="number" id="overallHeight" step="any" min="3.5" max="7.0" required>                            <small>3.5 or 7.0</small><div class="form-group">
+                <div class="form-group">
+                    <label for="overallHeight">Overall Height (m)</label>
+                            <input type="number" id="overallHeight" step="3.5" min="3.5" max="7.0" required>                    <small>3.5 or 7.0 in dataset</small>
+                </div>
+                <div class="form-group">
                     <label for="orientation">Orientation (dimensionless)</label>
                     <input type="number" id="orientation" step="1" min="2" max="5" required>
                     <small>2, 3, 4, 5 (cardinal orientations)</small>
@@ -365,7 +367,7 @@ function getInputs() {
         parseFloat(document.getElementById('relativeCompactness').value),
         parseFloat(document.getElementById('surfaceArea').value),
         parseFloat(document.getElementById('wallArea').value),
-        parseFloat(document.getElementById('209').value),
+        parseFloat(document.getElementById('roofArea').value),
         parseFloat(document.getElementById('overallHeight').value),
         parseFloat(document.getElementById('orientation').value),
         parseFloat(document.getElementById('glazingArea').value),
@@ -456,12 +458,6 @@ window.addEventListener('load', () => { loadScaler(); loadModel(); });
     </div>
 </body>
 </html>
-
-
-
-
-
-
 
 
 
