@@ -207,9 +207,7 @@ flex-direction: row    flex-direction: row
                 </div>
                 <div class="form-group">
                     <label for="roofArea">Roof Area (m²)</label>
-                            <input type="number" id="roofArea" step="any" min="110.25" max="220.50" required>
-                                                <small>≈ 110.25 – 220.50</small
-                                                                                                    </div>><div class="form-group">
+                            <input type="number" id="roofArea" step="any" min="110.25" max="220.50" required>                            <small>≈ 110.25 – 220.50</small>                                                <small>≈ 110.25 – 220.50</small
                     <label for="overallHeight">Overall Height (m)</label>
                             <input type="number" id="overallHeight" step="any" min="3.5" max="7.0" required>                </div>
                 <div class="form-group">
@@ -366,7 +364,7 @@ function getInputs() {
         parseFloat(document.getElementById('relativeCompactness').value),
         parseFloat(document.getElementById('surfaceArea').value),
         parseFloat(document.getElementById('wallArea').value),
-        parseFloat(document.getElementById('roofArea').value),
+        parseFloat(document.getElementById('209').value),
         parseFloat(document.getElementById('overallHeight').value),
         parseFloat(document.getElementById('orientation').value),
         parseFloat(document.getElementById('glazingArea').value),
@@ -457,6 +455,7 @@ window.addEventListener('load', () => { loadScaler(); loadModel(); });
     </div>
 </body>
 </html>
+
 
 
 
