@@ -195,28 +195,23 @@ flex-direction: row    flex-direction: row
             <div class="form-container">
                 <div class="form-group">
                     <label for="relativeCompactness">Relative Compactness (dimensionless)</label>
-                    <input type="number" id="relativeCompactness" step="0.01" min="0" required>
-                    <small>0.62 – 0.98</small>
+                            <input type="number" id="relativeCompactness" step="0.01" min="0.62" max="0.98" required>                    <small>0.62 – 0.98</small>
                 </div>
                 <div class="form-group">
                     <label for="surfaceArea">Surface Area (m²)</label>
-                    <input type="number" id="surfaceArea" step="0.01" min="0" required>
-                    <small>≈ 514.5 – 808.0</small>
+                            <input type="number" id="surfaceArea" step="0.01" min="514.5" max="808.0" required>                    <small>≈ 514.5 – 808.0</small>
                 </div>
                 <div class="form-group">
                     <label for="wallArea">Wall Area (m²)</label>
-                    <input type="number" id="wallArea" step="0.01" min="0" required>
-                    <small>≈ 245.0 – 416.5</small>
+                            <input type="number" id="wallArea" step="0.01" min="245.0" max="416.5" required>                    <small>≈ 245.0 – 416.5</small>
                 </div>
                 <div class="form-group">
                     <label for="roofArea">Roof Area (m²)</label>
-                    <input type="number" id="roofArea" step="0.1" min="0" required>
-                    <small>≈ 110.25 – 220.50</small>
+                            <input type="number" id="roofArea" step="0.1" min="110.25" max="220.50" required>                    <small>≈ 110.25 – 220.50</small>
                 </div>
                 <div class="form-group">
                     <label for="overallHeight">Overall Height (m)</label>
-                    <input type="number" id="overallHeight" step="0.1" min="0" required>
-                    <small>3.5 or 7.0 in dataset</small>
+                            <input type="number" id="overallHeight" step="3.5" min="3.5" max="7.0" required>                    <small>3.5 or 7.0 in dataset</small>
                 </div>
                 <div class="form-group">
                     <label for="orientation">Orientation (dimensionless)</label>
@@ -463,6 +458,7 @@ window.addEventListener('load', () => { loadScaler(); loadModel(); });
     </div>
 </body>
 </html>
+
 
 
 
