@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Regression test — Building Energy Design Studio</title>
+<link rel="stylesheet" href="../assets/css/studio.css">
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-wasm@4.22.0/dist/tf-backend-wasm.min.js"></script>
+</head>
+<body>
+<main id="main">
+  <p><a href="../#methods">← Back to the studio</a></p>
+  <h1>Prediction regression test</h1>
+  <p class="lede">Runs the 18 baseline cases captured from the original application (commit 81d5d9b) through this site’s inference adapter, in your browser. Displayed values must match exactly. Raw values may differ only by floating-point noise between TensorFlow.js backends (tolerance 2×10⁻⁵; the original app itself differed by up to 5.2×10⁻⁶ between WebGL and CPU).</p>
+  <p class="panel" data-summary role="status" aria-live="polite">Running…</p>
+  <div class="panel table-wrap"><table class="data" data-table></table></div>
+</main>
+<script type="module">
+import * as M from '../assets/js/inference.js';
+const TOL = 2e-5;
+const out = { status: 'running' };
+window.__regression = out;
+const sum = document.querySelector('[data-summary]');
+try {
+  const base = await (await fetch('baseline.json', { cache: 'no-store' })).json();
+  await M.load({ root: '../' });
+  const backend = M.snapshot().backend;
+  const ref = backend === 'cpu' ? 'raw_cpu' : 'raw_webgl';
+  const rows = []; let fails = 0; let maxRaw = 0;
+  const t0 = M.numTensors();
+  for (const c of base.cases) {
+    const r = await M.predict(c.inputs);
+    const shown = [r.heatingText, r.coolingText];
+    const d = Math.max(Math.abs(r.heatingRaw - c[ref][0]), Math.abs(r.coolingRaw - c[ref][1]));
+    maxRaw = Math.max(maxRaw, d);
+    const ok = shown[0] === c.displayed[0] && shown[1] === c.displayed[1] && d <= TOL;
+    if (!ok) fails++;
+    rows.push({ c, shown, d, ok, clipped: r.heatingClipped || r.coolingClipped });
+  }
+  // the batch path used by the parameter explorer must give the same numbers
+  await M.verifyBatch(base.cases.map((c) => c.inputs));
+  const many = await M.predictMany(base.cases.map((c) => c.inputs), { chunk: 64 });
+  const batchMismatch = many.results.filter((r, i) => r.heatingText !== rows[i].shown[0] || r.coolingText !== rows[i].shown[1]).length;
+  if (batchMismatch) fails += batchMismatch;
+  const leaked = M.numTensors() - t0;
+  if (leaked !== 0) fails++;
+  Object.assign(out, { status: fails ? 'fail' : 'pass', fails, cases: rows.length, backend, tfjs: M.snapshot().tfjs, batchSafe: M.snapshot().batchSafe, batchMismatch, maxRawDiff: maxRaw, tensorsLeaked: leaked, reference: ref });
+  sum.innerHTML = `<strong>${fails ? 'FAIL' : 'PASS'}</strong> — ${rows.length - fails} of ${rows.length} cases identical on the displayed values · backend ${backend} · TensorFlow.js ${M.snapshot().tfjs} · largest raw difference ${maxRaw.toExponential(2)} (vs baseline ${ref.replace('raw_', '')}) · sweep path ${batchMismatch ? batchMismatch + ' mismatches' : 'identical'} (${M.snapshot().batchSafe ? 'batched' : 'one at a time'}) · tensors leaked: ${leaked}`;
+  const tbl = document.querySelector('[data-table]');
+  tbl.innerHTML = '<thead><tr><th>#</th><th>Inputs (model order)</th><th class="num">Original</th><th class="num">This site</th><th class="num">Max raw Δ</th><th>Result</th></tr></thead>';
+  const tb = document.createElement('tbody');
+  rows.forEach((r, i) => {
+    const tr = document.createElement('tr');
+    [String(i + 1), r.c.inputs.join(', '), r.c.displayed.join(' / '), r.shown.join(' / ') + (r.clipped ? ' (clipped)' : ''), r.d.toExponential(2), r.ok ? 'PASS' : 'FAIL'].forEach((t, k) => {
+      const td = document.createElement('td'); td.textContent = t; if (k >= 2 && k <= 4) td.className = 'num'; tr.append(td);
+    });
+    tb.append(tr);
+  });
+  tbl.append(tb);
+} catch (err) {
+  Object.assign(out, { status: 'error', error: String(err && err.message || err) });
+  sum.textContent = 'ERROR: ' + out.error;
+}
+document.body.dataset.regression = out.status;
+</script>
+</body>
+</html>
