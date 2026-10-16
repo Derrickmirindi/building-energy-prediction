@@ -264,3 +264,5 @@ table.data.compare-table thead th { text-transform: none; letter-spacing: 0; fon
 .pos, .neg { color: inherit; }
 .results { scroll-margin-top: 130px; }
 @media (max-width: 760px) { .results { scroll-margin-top: 150px; } }
+.b-dim-light { fill: #fff; paint-order: stroke; stroke: rgba(20,24,30,.45); stroke-width: 3px; }
+.schematic { background: #6f7884; }
