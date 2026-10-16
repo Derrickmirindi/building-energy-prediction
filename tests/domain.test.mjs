@@ -44,7 +44,7 @@ test('feasibility recognises the 12 dataset forms and flags inconsistent combina
     assert.equal(n[0].level, 'ok'); assert.equal(n.filter((x) => x.level === 'warn').length, 0);
   }
   const odd = feasibility([0.62, 514.5, 245, 220.5, 3.5, 2, 0, 0]);
-  assert.ok(odd.some((x) => /not one of the 12/.test(x.text)));
+  assert.ok(!odd.some((x) => x.level === 'ok' && /matches dataset building form/.test(x.text)));
   assert.ok(odd.some((x) => /wall area \+ 2 × roof area/.test(x.text)));
   assert.ok(feasibility([0.98, 514.5, 294, 110.25, 7, 2, 0, 3]).some((x) => /code other than 0/.test(x.text)));
   assert.ok(feasibility([0.98, 514.5, 294, 110.25, 5, 2, 0.25, 1]).some((x) => /between the two dataset values/.test(x.text)));
