@@ -232,20 +232,21 @@ function renderCompare() {
     const r = scenarioResults.get(s.id);
     const inCmp = p.compare.includes(s.id);
     return h('tr', {},
-      h('td', {}, h('input', { type: 'radio', name: 'baseline', 'aria-label': `Use ${s.name} as baseline`, checked: p.baselineId === s.id, onchange: () => { Store.setBaseline(s.id); renderCompare(); } })),
-      h('td', {}, h('input', { type: 'checkbox', 'aria-label': `Compare ${s.name}`, checked: inCmp, disabled: !inCmp && p.compare.length >= 4, onchange: (e) => { Store.setCompare(e.target.checked ? [...p.compare, s.id] : p.compare.filter((x) => x !== s.id)); renderCompare(); } })),
+      h('td', { 'data-label': 'Baseline' }, h('input', { type: 'radio', name: 'baseline', 'aria-label': `Use ${s.name} as baseline`, checked: p.baselineId === s.id, onchange: () => { Store.setBaseline(s.id); renderCompare(); } })),
+      h('td', { 'data-label': 'Compare' }, h('input', { type: 'checkbox', 'aria-label': `Compare ${s.name}`, checked: inCmp, disabled: !inCmp && p.compare.length >= 4, onchange: (e) => { Store.setCompare(e.target.checked ? [...p.compare, s.id] : p.compare.filter((x) => x !== s.id)); renderCompare(); } })),
       h('td', {}, h('span', { class: 'scn-name', text: s.name }), p.baselineId === s.id ? h('span', { class: 'tag tag-base', text: 'baseline' }) : null, ' ',
-        h('div', { class: 'small muted', text: KEYS.map((k) => s.inputs[k]).join(' · ') })),
-      h('td', { class: 'num' }, r ? (r.error ? h('span', { class: 'tag tag-clip', text: 'error' }) : [r.heatingText, r.heatingClipped ? h('span', { class: 'tag tag-clip', text: 'clipped' }) : null]) : '…'),
-      h('td', { class: 'num' }, r ? (r.error ? '' : [r.coolingText, r.coolingClipped ? h('span', { class: 'tag tag-clip', text: 'clipped' }) : null]) : '…'),
-      h('td', {}, h('div', { class: 'scn-actions' },
-        h('button', { type: 'button', class: 'btn btn-small', text: 'Edit', title: 'Load into Predict to edit', onclick: () => editScenario(s.id) }),
-        h('button', { type: 'button', class: 'btn btn-small', text: 'Duplicate', onclick: () => { try { Store.duplicateScenario(s.id); refreshScenarioResults(); } catch (err) { $('[data-compare-status]').textContent = err.message; } } }),
-        h('button', { type: 'button', class: 'btn btn-small', text: 'Rename', onclick: () => renameScenario(s) }),
-        h('button', { type: 'button', class: 'btn btn-small btn-danger', text: 'Delete', 'aria-label': `Delete ${s.name}`, onclick: () => { if (confirmAction(`Delete “${s.name}”?`)) { Store.deleteScenario(s.id); scenarioResults.delete(s.id); renderCompare(); } } }))));
+        h('div', { class: 'small muted', text: KEYS.map((k) => s.inputs[k]).join(' · ') }),
+        h('div', { class: 'scn-actions' },
+          h('button', { type: 'button', class: 'btn btn-small', text: 'Edit', 'aria-label': `Edit ${s.name} in Predict`, onclick: () => editScenario(s.id) }),
+          h('button', { type: 'button', class: 'btn btn-small', text: 'Duplicate', 'aria-label': `Duplicate ${s.name}`, onclick: () => { try { Store.duplicateScenario(s.id); refreshScenarioResults(); } catch (err) { $('[data-compare-status]').textContent = err.message; } } }),
+          h('button', { type: 'button', class: 'btn btn-small', text: 'Rename', 'aria-label': `Rename ${s.name}`, onclick: () => renameScenario(s) }),
+          h('button', { type: 'button', class: 'btn btn-small btn-danger', text: 'Delete', 'aria-label': `Delete ${s.name}`, onclick: () => { if (confirmAction(`Delete “${s.name}”?`)) { Store.deleteScenario(s.id); scenarioResults.delete(s.id); renderCompare(); } } }))),
+      h('td', { class: 'num', 'data-label': 'Heating' }, r ? (r.error ? h('span', { class: 'tag tag-clip', text: 'error' }) : [r.heatingText, r.heatingClipped ? h('span', { class: 'tag tag-clip', text: 'clipped' }) : null]) : '…'),
+      h('td', { class: 'num', 'data-label': 'Cooling' }, r ? (r.error ? '' : [r.coolingText, r.coolingClipped ? h('span', { class: 'tag tag-clip', text: 'clipped' }) : null]) : '…'),
+    );
   });
   list.replaceChildren(h('div', { class: 'table-wrap' }, h('table', { class: 'data scn-table' },
-    h('thead', {}, h('tr', {}, h('th', { text: 'Base' }), h('th', { text: 'Compare' }), h('th', { text: 'Scenario · inputs in model order' }), h('th', { class: 'num', text: 'Heating' }), h('th', { class: 'num', text: 'Cooling' }), h('th', { class: 'num', text: 'Actions' }))),
+    h('thead', {}, h('tr', {}, h('th', { text: 'Base' }), h('th', { text: 'Compare' }), h('th', { text: 'Scenario · inputs in model order' }), h('th', { class: 'num', text: 'Heating' }), h('th', { class: 'num', text: 'Cooling' }))),
     h('tbody', {}, rows))));
   renderComparison();
 }
