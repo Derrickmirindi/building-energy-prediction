@@ -175,6 +175,9 @@ form.addEventListener('submit', async (e) => {
     markStale();
     setFormStatus(`Prediction complete · heating ${r.heatingText}, cooling ${r.coolingText} ${UNIT.replace('*', '')}${r.heatingClipped || r.coolingClipped ? ' (clipped; see note)' : ''}.`);
     $('#scenario-name').value = $('#scenario-name').value || suggestName(v.values);
+    if (matchMedia('(max-width: 1080px)').matches) {
+      $('.results').scrollIntoView({ block: 'start', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+    }
   } catch (err) {
     setFormStatus('Prediction error: ' + err.message, true);
   } finally {
