@@ -23,14 +23,12 @@
         <p class="brand-sub">Explore design alternatives with the existing trained model.</p>
       </div>
     </div>
-    <div class="model-pill" data-model-pill role="status" aria-live="polite"><span class="dot"></span><span data-model-pill-text>Loading model…</span></div>
   </div>
   <nav class="tabs" aria-label="Studio sections">
     <a href="#predict" data-tab="predict">Predict</a>
     <a href="#compare" data-tab="compare">Compare <span class="count" data-scenario-count></span></a>
     <a href="#explore" data-tab="explore">Parameter Explorer</a>
     <a href="#reports" data-tab="reports">Reports</a>
-    <a href="#methods" data-tab="methods">Model &amp; Methods</a>
   </nav>
 </header>
 
@@ -94,7 +92,6 @@
       <section class="panel" aria-labelledby="h-schematic">
         <div class="panel-head"><h2 id="h-schematic">Schematic</h2></div>
         <div class="schematic" data-schematic></div>
-        <p class="caption">Schematic illustration—not a reconstructed building or BIM model. Drawn as an equivalent rectangular block whose footprint equals the roof area and whose perimeter is wall area ÷ height. Window bands scale with the glazing fraction; their direction is not shown because the distribution codes are not documented.</p>
       </section>
     </div>
   </div>
@@ -196,75 +193,6 @@
   <article class="report" data-report aria-label="Report preview"></article>
 </section>
 
-<!-- ============================================================ METHODS -->
-<section class="view" id="view-methods" data-view="methods" aria-labelledby="h-methods" hidden>
-  <div class="view-head">
-    <h1 id="h-methods">Model &amp; methods</h1>
-    <p class="lede">What the model is, what it receives, how predictions are computed in this page, and where its limits are.</p>
-  </div>
-  <div class="methods">
-    <section class="panel">
-      <h2>Architecture</h2>
-      <p>A fully connected neural network (multilayer perceptron), verified from <code>model.json</code>:</p>
-      <ol class="arch">
-        <li>Input: 8 standardised features</li>
-        <li>Dense 256 → batch normalisation → ReLU → dropout 0.3</li>
-        <li>Dense 128 → batch normalisation → ReLU → dropout 0.3</li>
-        <li>Dense 64 → batch normalisation → ReLU</li>
-        <li>Dense 2 (linear): standardised heating and cooling load</li>
-      </ol>
-      <p class="small muted">Earlier versions of this site described the model as a convolutional neural network (CNN). The saved model has no convolutional layers. Dropout is inactive when predicting. Built with Keras 3.10.0; converted with TensorFlow.js Converter 4.22.0.</p>
-    </section>
-    <section class="panel">
-      <h2>Inputs (model order)</h2>
-      <div class="table-wrap"><table class="data" data-feature-table></table></div>
-    </section>
-    <section class="panel">
-      <h2>Inference in this page</h2>
-      <ol class="steps">
-        <li>Each input is standardised: <code>(x − mean) / std</code>, using the eight means and standard deviations in <code>scaler_params.json</code>.</li>
-        <li>The values are passed as one 1 × 8 float32 tensor to the model in TensorFlow.js.</li>
-        <li>The two outputs are converted back: <code>z × std + mean</code> (heating, then cooling).</li>
-        <li>Outputs are clipped to 6.0–45.0 (heating) and 11.0–48.0 (cooling) and shown with two decimals. When clipping changes a value, the studio says so.</li>
-      </ol>
-      <p class="small">These steps, the files and the clipping limits are unchanged from the original application. A single adapter (<code>assets/js/inference.js</code>) performs them for every feature of the studio. For sweeps it predicts in batches only after checking, on your device, that batched results are bit-for-bit identical to one-at-a-time results.</p>
-    </section>
-    <section class="panel">
-      <h2>Runtime and model identity</h2>
-      <div class="table-wrap"><table class="data" data-runtime-table></table></div>
-      <div class="form-actions">
-        <button type="button" class="btn btn-small" data-verify-files>Verify model files (SHA-256)</button>
-        <button type="button" class="btn btn-small btn-ghost" data-clear-cache>Clear this browser’s model cache</button>
-        <a class="btn btn-small btn-ghost" href="tests/regression.html">Run the regression test</a>
-      </div>
-      <p class="small" data-verify-out role="status" aria-live="polite"></p>
-    </section>
-    <section class="panel">
-      <h2>Training data and supported domain</h2>
-      <p>The eight inputs and their values match the public <a href="https://archive.ics.uci.edu/dataset/242/energy+efficiency" rel="noopener">UCI “Energy efficiency” dataset</a> (A. Tsanas and A. Xifara, 2012; CC BY 4.0): 768 residential buildings simulated in Ecotect for Athens, Greece, from 12 building forms, 4 orientations and several glazing options. The scaler statistics correspond to a 537-row subset (70 % of 768). The training procedure, split and accuracy of this specific model are not documented in this repository, so no accuracy figures are shown here.</p>
-      <p>Supported values: see the input table. Each input can be in range while the combination is unlike any training building; the studio flags combinations that are not one of the 12 dataset forms, break the dataset relation <em>surface area = wall area + 2 × roof area</em>, use heights other than 3.5 m or 7.0 m, or pair glazing code 0 with non-zero glazing. Passing these checks does not prove a design is within the training distribution.</p>
-    </section>
-    <section class="panel">
-      <h2>Units, codes and open questions</h2>
-      <ul class="plain">
-        <li><strong>Units and time basis.</strong> The original site reports kWh/m² and describes annual energy use. Neither the dataset page nor the source paper states the unit or time basis, so this is shown with a caveat.</li>
-        <li><strong>Orientation codes 2–5.</strong> The original site described these as North, East, South and West. The dataset documentation does not define the codes.</li>
-        <li><strong>Glazing distribution codes 0–5.</strong> The source paper describes no glazing, uniform glazing, and glazing concentrated on the north, east, south or west side, but not which code is which.</li>
-        <li><strong>Glazing area.</strong> The source paper defines it as a percentage of floor area; the original site described it as a share of the façade.</li>
-      </ul>
-    </section>
-    <section class="panel">
-      <h2>Limitations</h2>
-      <ul class="plain">
-        <li>This is a data-driven estimator trained on simulated buildings, not an EnergyPlus or other physics-based simulation, and not a replacement for one.</li>
-        <li>It receives only the eight inputs above. Climate, location, materials, HVAC systems, occupancy and schedules are fixed by the training data and cannot be changed here.</li>
-        <li>No monthly or hourly profiles, cost, carbon, code-compliance or HVAC-sizing results are produced.</li>
-        <li>No uncertainty intervals are available. Clipped outputs are shown at the clip limit and flagged.</li>
-        <li>“Lowest tested” in the explorer means lowest among the evaluated points, not a globally optimal building.</li>
-      </ul>
-    </section>
-  </div>
-</section>
 </main>
 
 <footer class="footer">

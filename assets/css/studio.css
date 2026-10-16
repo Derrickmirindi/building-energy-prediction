@@ -1,20 +1,21 @@
 /* Building Energy Design Studio — charcoal, warm white, grey, restrained red. */
 :root {
   --char: #1d1d1f; --char-2: #2b2b2e; --ink: #1d1d1f; --ink-2: #4a4845; --muted: #6b6862;
-  --paper: #f5f3ee; --panel: #ffffff; --line: #dcd8cf; --line-2: #ebe8e1; --grid: rgba(29,29,31,.045);
+  --paper: #eaf2fd; --panel: #ffffff; --line: #cfd9e8; --line-2: #e4eaf3; --grid: rgba(48,98,178,.075);
   --red: #b8322a; --red-ink: #9c2a23; --red-soft: #f7e6e3;
   --heat: #c4472f; --heat-soft: #fbece8; --cool: #2e6e9e; --cool-soft: #e8f0f7;
   --ok: #2f6b3a; --warn: #8a5a00; --warn-soft: #fbf3e2; --err: #a32620; --err-soft: #fbe9e7;
   --r: 6px; --gap: 20px;
-  --sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --sans: "Times New Roman", Times, "Liberation Serif", "Nimbus Roman", serif;
+  --mono: "Times New Roman", Times, "Liberation Serif", serif;
 }
 * { box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; }
 body {
-  margin: 0; font: 16px/1.55 var(--sans); color: var(--ink); background-color: var(--paper);
-  background-image: linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px);
-  background-size: 24px 24px;
+  margin: 0; font: 17px/1.55 var(--sans); color: var(--ink); background-color: var(--paper);
+  background-image: linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px),
+    linear-gradient(160deg, #f3f8ff 0%, #e4eefc 55%, #dfe8fb 100%);
+  background-size: 24px 24px, 24px 24px, 100% 100%; background-attachment: scroll, scroll, fixed;
 }
 h1, h2, h3 { line-height: 1.2; margin: 0; letter-spacing: -0.01em; }
 h1 { font-size: clamp(1.5rem, 1.1rem + 1.4vw, 2.1rem); font-weight: 650; }
@@ -59,7 +60,7 @@ main { max-width: 1320px; margin: 0 auto; padding: 24px 24px 48px; }
 .panel { background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); padding: 18px 20px; margin-bottom: var(--gap); }
 .panel-head { margin-bottom: 12px; }
 .panel-head.row { display: flex; gap: 12px; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; }
-.panel.empty { color: var(--muted); border-style: dashed; background: rgba(255,255,255,.6); }
+.panel.empty { color: var(--muted); border-style: dashed; background: rgba(255,255,255,.65); }
 .predict-grid { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: var(--gap); align-items: start; }
 .explore-grid { display: grid; grid-template-columns: minmax(280px, 360px) minmax(0, 1fr); gap: var(--gap); align-items: start; }
 .methods { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 var(--gap); }
@@ -125,15 +126,15 @@ details.help summary { cursor: pointer; color: var(--ink-2); }
 .save-row label { display: block; font-weight: 600; margin-bottom: 6px; }
 .inline { display: flex; gap: 8px; }
 .inline input { flex: 1; min-width: 0; }
-.schematic { display: grid; place-items: center; background: #fbfaf7; border: 1px solid var(--line-2); border-radius: 4px; min-height: 200px; }
-.bldg { width: 100%; max-width: 440px; height: auto; display: block; }
+.schematic { display: grid; place-items: center; background: #eef5fd; border: 1px solid var(--line-2); border-radius: 4px; min-height: 200px; overflow: hidden; }
+.bldg { width: 100%; height: auto; display: block; }
 .b-ground { fill: #e7e3da; }
 .b-wall { stroke: #1d1d1f; stroke-width: 1; stroke-linejoin: round; }
 .b-wall-a { fill: #d9d5cc; } .b-wall-b { fill: #bfbab0; }
 .b-roof { fill: #efece5; stroke: #1d1d1f; stroke-width: 1; stroke-linejoin: round; }
 .b-floor { fill: none; stroke: #1d1d1f; stroke-width: .6; stroke-dasharray: 3 2; }
 .b-glass { fill: #7fa6c2; stroke: #2c4f69; stroke-width: .5; opacity: .9; }
-.b-dim { font: 600 11px var(--sans); fill: var(--ink-2); }
+.b-dim { font: 600 13px var(--sans); fill: var(--ink-2); }
 .b-warn { font: 600 11px var(--sans); fill: var(--warn); }
 .caption { font-size: .8rem; color: var(--muted); margin: 10px 0 0; }
 

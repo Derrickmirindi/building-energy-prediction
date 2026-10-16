@@ -22,7 +22,7 @@ const stamp = () => new Date().toISOString();
 const fileStamp = () => new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-');
 
 /* ======================================================================= tabs */
-const TABS = ['predict', 'compare', 'explore', 'reports', 'methods'];
+const TABS = ['predict', 'compare', 'explore', 'reports'];
 function route() {
   const id = (location.hash || '#predict').slice(1);
   const tab = TABS.includes(id) ? id : 'predict';
@@ -31,24 +31,19 @@ function route() {
   if (tab === 'reports') renderReport();
   if (tab === 'explore') { renderBaseSummary(); updateSweepCount(); }
   if (tab === 'compare') renderCompare();
-  if (tab === 'methods') renderRuntime();
   document.title = `${$(`[data-tab="${tab}"]`).textContent.replace(/\d+/g, '').trim()} — Building Energy Design Studio`;
 }
 window.addEventListener('hashchange', () => { route(); $('main').focus({ preventScroll: true }); });
 $('main').tabIndex = -1;
 
 /* ================================================================== model state */
-const pill = $('[data-model-pill]');
 M.onStatus((s) => {
-  pill.className = 'model-pill is-' + s.status;
-  $('[data-model-pill-text]').textContent = s.status === 'ready' ? `Model ready · ${s.backend}` : s.status === 'error' ? 'Model failed to load' : (s.message || 'Loading model…');
   const ready = s.status === 'ready';
   $('[data-predict]').disabled = !ready;
   $('[data-sweep-run]').disabled = !ready;
   $('[data-load-error]').hidden = s.status !== 'error';
   if (s.status === 'error') $('[data-load-error-text]').textContent = s.message;
   if (!ready && s.status === 'loading') setFormStatus(s.message);
-  if (!$('[data-view="methods"]').hidden) renderRuntime();
 });
 $('[data-retry]').addEventListener('click', () => start());
 
@@ -115,7 +110,7 @@ function markStale() {
   const same = current.inputs && KEYS.every((k) => String(readForm()[k]).trim() === String(current.inputs[k]));
   current.stale = !same;
   $('.results').classList.toggle('is-stale', current.stale);
-  $('[data-result-state]').textContent = current.stale ? 'Inputs have changed since this estimate. Press Predict loads to update it.' : `Estimate for the inputs shown · ${M.snapshot().backend} backend`;
+  $('[data-result-state]').textContent = current.stale ? 'Inputs have changed since this estimate. Press Predict loads to update it.' : 'Estimate for the inputs shown.';
   $('[data-save-row]').hidden = current.stale;
 }
 
@@ -578,47 +573,8 @@ $$('[data-rep]').forEach((c) => c.addEventListener('change', renderReport));
 $('[data-print]').addEventListener('click', () => { renderReport(); window.print(); });
 window.addEventListener('beforeprint', renderReport);
 
-/* ================================================================== methods */
-function renderFeatureTable() {
-  $('[data-feature-table]').replaceChildren(h('thead', {}, h('tr', {}, h('th', { text: '#' }), h('th', { text: 'Feature' }), h('th', { text: 'Type' }), h('th', { text: 'Supported input' }), h('th', { text: 'Values in the dataset' }))),
-    h('tbody', {}, FEATURES.map((f, i) => h('tr', {}, h('td', { text: String(i + 1) }), h('td', { text: f.name + (f.unit === 'm²' || f.unit === 'm' ? ` (${f.unit})` : '') }), h('td', { text: f.kind === 'category' ? 'categorical code' : 'continuous' }),
-      h('td', { text: f.kind === 'category' ? f.codes.join(', ') : `${f.min} – ${f.max}` }), h('td', { text: f.kind === 'category' ? f.codes.join(', ') : f.dataset.join(', ') })))));
-}
-function renderRuntime() {
-  const s = M.snapshot();
-  const row = (k, v) => h('tr', {}, h('th', { text: k }), h('td', { text: v }));
-  $('[data-runtime-table]').replaceChildren(h('tbody', {},
-    row('Model status', s.status + (s.status === 'error' ? ` — ${s.message}` : '')),
-    row('TensorFlow.js', s.tfjs ? `${s.tfjs} (expected ${M.TFJS_VERSION_EXPECTED})` : 'not loaded'),
-    row('Backend', s.backend || '–'),
-    row('Model loaded from', s.source === 'cache' ? 'this browser’s IndexedDB cache' : s.source === 'network' ? 'the network' : '–'),
-    row('Cache key', M.CACHE_KEY.replace('indexeddb://', '')),
-    row('Batched sweeps', s.batchSafe === null ? 'not yet checked' : s.batchSafe ? 'verified identical to single predictions on this device' : 'differences found — sweeps predict one at a time'),
-    row('model.json SHA-256', M.MODEL_FILES['model.json']),
-    row('group1-shard1of1.bin SHA-256', M.MODEL_FILES['group1-shard1of1.bin']),
-    row('scaler_params.json SHA-256', M.MODEL_FILES['scaler_params.json'])));
-}
-$('[data-verify-files]').addEventListener('click', async () => {
-  const out = $('[data-verify-out]'); out.textContent = 'Downloading and hashing the three files…';
-  try {
-    const res = [];
-    for (const [f, want] of Object.entries(M.MODEL_FILES)) {
-      const r = await fetch(f, { cache: 'no-store' });
-      if (!r.ok) throw new Error(`${f}: HTTP ${r.status}`);
-      const hash = [...new Uint8Array(await crypto.subtle.digest('SHA-256', await r.arrayBuffer()))].map((b) => b.toString(16).padStart(2, '0')).join('');
-      res.push(`${f}: ${hash === want ? 'matches' : 'DOES NOT MATCH'}`);
-    }
-    out.textContent = res.join(' · ');
-  } catch (err) { out.textContent = 'Verification failed: ' + err.message; }
-});
-$('[data-clear-cache]').addEventListener('click', async () => {
-  const ok = await M.clearCache();
-  $('[data-verify-out]').textContent = ok ? 'The cached model was removed from this browser. It will be downloaded again on the next visit.' : 'There was no cached model to remove.';
-});
-
 /* ================================================================== boot */
 buildFields();
-renderFeatureTable();
 axisBox('x'); axisBox('y');
 Store.load();
 writeForm(DEFAULT_INPUTS);

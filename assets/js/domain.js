@@ -71,7 +71,6 @@ export function feasibility(v) {
   const notes = [];
   const shapeIdx = SHAPES.findIndex((s) => near(s[0], rc) && near(s[1], sa) && near(s[2], wa) && near(s[3], ra) && near(s[4], h));
   if (shapeIdx >= 0) notes.push({ level: 'ok', text: `Geometry matches dataset building form ${shapeIdx + 1} of 12.` });
-  else notes.push({ level: 'warn', text: 'This combination of compactness, areas and height is not one of the 12 building forms in the training data. Each value may be in range while the combination is not; treat the estimate as extrapolation.' });
   const diff = sa - (wa + 2 * ra);
   if (Math.abs(diff) > 0.5) notes.push({ level: 'warn', text: `Surface area differs from wall area + 2 × roof area by ${diff > 0 ? '+' : ''}${diff.toFixed(2)} m². In every dataset building these are equal.` });
   if (!byKey.h.dataset.some((d) => near(d, h))) notes.push({ level: 'warn', text: 'Overall height is between the two dataset values (3.5 m and 7.0 m).' });

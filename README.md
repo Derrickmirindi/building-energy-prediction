@@ -10,13 +10,13 @@ A static web application that runs a trained neural network in the browser (Tens
 alternatives with it.
 
 - **Predict**: the original eight-input prediction, with validation, clipping disclosure, consistency checks
-  against the training data and a schematic building illustration.
+  against the training data and an illustrative building view driven by the inputs.
 - **Compare**: save scenarios, pick a baseline and compare up to four (absolute and percentage differences in
   model estimates), with CSV and JSON export/import.
 - **Parameter Explorer**: one-variable response curves and two-variable heatmaps, computed point by point with
   the unchanged model, with progress, cancellation and evaluation limits.
-- **Reports**: a printable report (save as PDF from the browser's print dialog).
-- **Model & Methods**: architecture, inputs, inference steps, runtime and file checksums, limitations.
+- **Reports**: a printable report (save as PDF from the browser's print dialog), including the model,
+  assumptions and limitations. Full method details are in [`docs/MODEL_AUDIT.md`](docs/MODEL_AUDIT.md).
 
 > This is a data-driven estimator trained on simulated buildings. It is **not** an EnergyPlus or other
 > physics-based simulation, and not a tool for code compliance, HVAC sizing or design sign-off.
