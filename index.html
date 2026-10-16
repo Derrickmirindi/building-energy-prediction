@@ -1,476 +1,277 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Building Energy Prediction - Developed by Derrick Mirindi</title>
-
-    <!-- Load TensorFlow.js (Layers API, needed for loadLayersModel) -->
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js"></script>
-    <!-- Optional: WASM backend for broader compatibility fallback -->
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-wasm@4.22.0/dist/tf-backend-wasm.min.js"></script>
-
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: 'Times New Roman', serif;
-                        font-size: 20px;
-                        text-align: center;
-            background: linear-gradient(135deg, #5568ff 0%, #8b3dff 100%);            min-height: 100vh;
-            padding: 20px;
-        }
-        .container {
-            max-width: 280px;            background: #ffffff;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.4);
-            overflow: hidden;
-        }
-        .header {
-            background: linear-gradient(135deg, #5568ff 0%, #8b3dff 100%);            color: #ffffff;
-            padding: 25px 20px;
-            text-align: center;
-        }
-        .header h1 { font-size: 1.8em; margin-bottom: 6px; font-weight: bold; }
-        .header p  { font-size: 1.0em; opacity: 0.96; }
-
-        .content { padding: 20px 25px 25px 25px; }
-
-        .info-section {
-            background: #f8f9fa;
-            border-left: 4px solid #667eea;
-            padding: 12px 14px;
-            margin-bottom: 18px;
-            border-radius: 8px;
-        }
-        .info-section h3 {
-            color: #667eea;
-            margin-bottom: 4px;
-            font-size: 1.05em;
-        }
-        .info-section p { color: #555; line-height: 1.5; font-size: 0.9em; }
-
-        .form-container {
-            display: flex;
-        flex-direction: column;            
-            gap: 12px;
-            margin-bottom: 20px;
-        }
-        .form-group { display: flex; 58
-flex-direction: row    flex-direction: row
-                     ; align-items: center; gap: 5px;  justify-content: space-between; }
-    .form-group label {
-            font-weight: 600;
-            color: #333;
-            font-size: 1.1em;            flex: 1;
-            text-align: left;        }
-        .form-group input {
-            width: 200px;            padding: 4px 8px;
-            border: 2px solid #d0d0d0;
-            border-radius: 6px;
-            font-size: 1.1em;            font-family: 'Times New Roman', serif;
-            transition: border-color 0.25s;
-            text-align: center;            background: #fafafa;
-        }
-        .form-group input:focus {
-            outline: none;
-            border-color: #5568ff;            box-shadow: 0 0 4px rgba(102,126,234,0.35);
-        }
-        .form-group small {
-            color: #999;
-            font-size: 0.9em;            font-style: italic;
-            width: 200px;            text-align: center;        }
-
-        .button-group {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-        button {
-            padding: 12px 20px;
-            font-size: 1.0em;
-            font-weight: bold;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: all 0.25s;
-            font-family: 'Times New Roman', serif;
-        }
-        .btn-predict {
-            background: linear-gradient(135deg, #5568ff 0%, #8b3dff 100%);            color: #ffffff;
-        }
-        .btn-predict:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 8px 18px rgba(102,126,234,0.4);
-        }
-        .btn-clear {
-            background: #e0e0e0;
-            color: #333333;
-        }
-        .btn-clear:hover { background: #d0d0d0; }
-
-        .status {
-            padding: 8px 12px;
-            border-radius: 8px;
-            margin-top: 10px;
-            font-weight: 600;
-            text-align: center;
-            font-size: 0.85em;
-        }
-        .status.loading { background: #fff3cd; color: #856404; }
-        .status.success { background: #d4edda; color: #155724; }
-        .status.error   { background: #f8d7da; color: #721c24; }
-        .hidden { display: none; }
-
-        .results-container {
-            display: grid;
-            grid-template-columns: 1fr 1fr;            gap: 12px;
-            margin-top: 20px;
-            padding-top: 20px;
-            border-top: 2px solid #e0e0e0;
-        }
-        .result-card {
-            padding: 15px 20px;
-            border-radius: 10px;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.15);
-            text-align: center;
-        }
-        .result-card.heating {
-            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
-        }
-        .result-card.cooling {
-            background: linear-gradient(135deg, #d0e8f2 0%, #a8d8ea 100%);
-        }
-        .result-card h3 { color: #333; margin-bottom: 8px; font-size: 1.0em; font-weight: 600; }
-        .result-value   { font-size: 2.0em; font-weight: bold; color: #1f3a93; margin: 5px 0; }
-        .result-unit    { font-size: 0.9em; color: #555; }
-
-        .model-info {
-            background: #f0f4f8;
-            padding: 18px 20px;
-            border-radius: 8px;
-            margin-top: 28px;
-            border: 2px solid #667eea;
-        }
-        .model-info h4 { color: #667eea; margin-bottom: 8px; font-size: 1.15em; }
-        .model-info p  { color: #555; margin-bottom: 6px; font-size: 1.0em; line-height: 1.5; }
-
-        .metrics {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-top: 8px;
-        }
-        .metric {
-            background: #ffffff;
-            padding: 9px 10px;
-            border-radius: 6px;
-            text-align: center;
-            border-left: 4px solid #667eea;
-        }
-        .metric-label { color: #666; font-size: 0.9em; margin-bottom: 3px; }
-        .metric-value { font-size: 1.2em; font-weight: bold; color: #334296; }
-
-        @media (max-width: 600px) {
-            .container { max-width: 95%; margin: 10px auto; }
-            .content { padding: 15px 18px 20px 18px; }
-            .form-group { flex-direction: column; align-items: stretch; }
-            .form-group label { text-align: left; }
-            .form-group input { width: 100%; text-align: left; }
-            .form-group small { width: 100%; text-align: left; }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Building Energy Design Studio — Developed by Derrick Mirindi</title>
+<meta name="description" content="Explore building design alternatives with an existing trained neural-network model of heating and cooling loads.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%231d1d1f'/%3E%3Cpath d='M8 24V13l8-5 8 5v11z' fill='none' stroke='%23f5f3ee' stroke-width='2'/%3E%3Crect x='14' y='17' width='4' height='7' fill='%23c4472f'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/css/studio.css">
+<!-- Inference runtime: unchanged from the original application (TensorFlow.js 4.22.0 + WASM backend). -->
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-wasm@4.22.0/dist/tf-backend-wasm.min.js"></script>
+<script type="module" src="assets/js/app.js"></script>
 </head>
 <body>
-    
-    <div class="header">
-        <h1>Building Energy Prediction</h1>
-
-
-    <div class="content">
-        <div class="info-section">
-            <h3>Convolutional Neural Network (CNN) Model</h3>
-
-        <form id="predictionForm">
-            <div class="form-container">
-                <div class="form-group">
-                    <label for="relativeCompactness">Relative Compactness (dimensionless)</label>
-                            <input type="number" id="relativeCompactness" step="0.01" min="0.62" max="0.98" required>                    <small>0.62 – 0.98</small>
-                </div>
-                <div class="form-group">
-                    <label for="surfaceArea">Surface Area (m²)</label>
-                            <input type="number" id="surfaceArea" step="0.01" min="514.5" max="808.0" required>                    <small>≈ 514.5 – 808.0</small>
-                </div>
-                <div class="form-group">
-                    <label for="wallArea">Wall Area (m²)</label>
-                            <input type="number" id="wallArea" step="0.01" min="245.0" max="416.5" required>                    <small>≈ 245.0 – 416.5</small>
-                </div>
-                <div class="form-group">
-                    <label for="roofArea">Roof Area (m²)</label>
-                            <input type="number" id="roofArea" step="any" min="110.25" max="220.50" required>                    <small>≈ 110.25 – 220.50</small>
-                </div>
-                <div class="form-group">
-                    <label for="overallHeight">Overall Height (m)</label>
-                            <input type="number" id="overallHeight" step="any" min="3.5" max="7.0" required>                    <small>3.5 or 7.0 in dataset</small>
-                </div>
-                <div class="form-group">
-                    <label for="orientation">Orientation (dimensionless)</label>
-                    <input type="number" id="orientation" step="1" min="2" max="5" required>
-                    <small>2, 3, 4, 5 (cardinal orientations)</small>
-                </div>
-                <div class="form-group">
-                    <label for="glazingArea">Glazing Area (dimensionless)</label>
-                    <input type="number" id="glazingArea" step="0.01" min="0" max="0.4" required>
-                    <small>0.0 – 0.4 façade glazed</small>
-                </div>
-                <div class="form-group">
-                    <label for="glazingDistribution">Glazing Area Distribution (dimensionless)</label>
-                    <input type="number" id="glazingDistribution" step="1" min="0" max="5" required>
-                    <small>0 = none, 1–5 = patterns</small>
-                </div>
-            </div>
-
-            <div class="button-group">
-                <button type="submit" class="btn-predict">Predict loads</button>
-                <button type="reset" class="btn-clear">Clear</button>
-            </div>
-        </form>
-
-        <div id="status" class="status hidden"></div>
-
-        <div id="resultsContainer" class="results-container hidden">
-            <div class="result-card heating">
-                <h3>Heating Load</h3>
-                <div class="result-value" id="heatingResult">0.00</div>
-                <div class="result-unit">kWh/m²</div>
-            </div>
-            <div class="result-card cooling">
-                <h3>Cooling Load</h3>
-                <div class="result-value" id="coolingResult">0.00</div>
-                <div class="result-unit">kWh/m²</div>
-            </div>
-        </div>
-
-
+<a class="skip" href="#main">Skip to content</a>
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><path d="M7 25V13l9-6 9 6v12z" fill="none" stroke="currentColor" stroke-width="2"/><rect x="14" y="17" width="4" height="8" fill="#e0533b"/></svg>
+      <div>
+        <p class="brand-title">Building Energy Design Studio</p>
+        <p class="brand-sub">Explore design alternatives with the existing trained model.</p>
+      </div>
     </div>
+    <div class="model-pill" data-model-pill role="status" aria-live="polite"><span class="dot"></span><span data-model-pill-text>Loading model…</span></div>
+  </div>
+  <nav class="tabs" aria-label="Studio sections">
+    <a href="#predict" data-tab="predict">Predict</a>
+    <a href="#compare" data-tab="compare">Compare <span class="count" data-scenario-count></span></a>
+    <a href="#explore" data-tab="explore">Parameter Explorer</a>
+    <a href="#reports" data-tab="reports">Reports</a>
+    <a href="#methods" data-tab="methods">Model &amp; Methods</a>
+  </nav>
+</header>
+
+<noscript><p class="banner banner-error">This studio needs JavaScript to run the model in your browser.</p></noscript>
+<div class="banner banner-error" data-load-error hidden>
+  <p><strong>The model could not be loaded.</strong> <span data-load-error-text></span></p>
+  <p><button type="button" class="btn btn-small" data-retry>Try again</button></p>
 </div>
 
-<script>
-const MODEL_URL = './model.json';
-const INDEXEDDB_KEY = 'indexeddb://building-energy-mlp';
-let cnnModel = null;
-let scaler = null;
-let modelReady = false;
-let scalerReady = false;
+<main id="main">
+<!-- ============================================================ PREDICT -->
+<section class="view" id="view-predict" data-view="predict" aria-labelledby="h-predict">
+  <div class="view-head">
+    <h1 id="h-predict">Predict heating and cooling loads</h1>
+    <p class="lede">Enter the eight design parameters in the model’s input order. The prediction runs in your browser with the trained model; nothing is sent to a server.</p>
+  </div>
+  <div class="predict-grid">
+    <form class="panel inputs" data-form novalidate aria-describedby="form-help">
+      <div class="panel-head">
+        <h2>Design inputs</h2>
+        <p id="form-help" class="muted small">Ranges are the ones supported by this tool. Dataset values are the values that occur in the 768 training-data buildings.</p>
+      </div>
+      <div data-fields></div>
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary" data-predict disabled>Predict loads</button>
+        <button type="button" class="btn" data-example>Load example</button>
+        <button type="button" class="btn btn-ghost" data-reset>Clear inputs</button>
+      </div>
+      <p class="form-status" data-form-status role="status" aria-live="polite"></p>
+    </form>
 
-const statusEl = document.getElementById('status');
-const predictBtn = document.querySelector('.btn-predict');
-const resultsContainer = document.getElementById('resultsContainer');
-
-function updateStatus(message, type) {
-    statusEl.textContent = message;
-    statusEl.className = 'status ' + type;
-    statusEl.classList.remove('hidden');
-}
-
-function maybeEnablePredict() {
-    if (modelReady && scalerReady) {
-        predictBtn.disabled = false;
-        predictBtn.style.opacity = 1.0;
-        updateStatus('Model and scaler loaded! Ready for predictions.', 'success');
-    }
-}
-
-// Disable predict button until model & scaler are loaded
-predictBtn.disabled = true;
-predictBtn.style.opacity = 0.6;
-
-async function initBackend() {
-    try {
-        await tf.setBackend('webgl');
-        updateStatus('Using WebGL backend for faster inference.', 'loading');
-    } catch (e) {
-        try {
-            if (tf.wasm && tf.wasm.setWasmPaths) {
-                tf.wasm.setWasmPaths('https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-wasm@4.22.0/dist/');
-            }
-            await tf.setBackend('wasm');
-            updateStatus('WebGL unavailable, using WASM backend.', 'loading');
-        } catch (err) {
-            await tf.setBackend('cpu');
-            updateStatus('Falling back to CPU backend.', 'loading');
-        }
-    }
-    await tf.ready();
-}
-
-async function loadScaler() {
-    try {
-        updateStatus('Loading scaler parameters...', 'loading');
-        const resp = await fetch('./scaler_params.json');
-        scaler = await resp.json();
-        scalerReady = true;
-        updateStatus('Scaler parameters loaded.', 'success');
-        maybeEnablePredict();
-    } catch (err) {
-        console.error(err);
-        updateStatus('Error loading scaler parameters: ' + err.message, 'error');
-    }
-}
-
-async function loadModel() {
-    try {
-        updateStatus('Initializing TensorFlow.js...', 'loading');
-        await initBackend();
-
-        // Try to load from IndexedDB cache first (fast on repeat visits)
-        updateStatus('Loading model from cache...', 'loading');
-        try {
-            cnnModel = await tf.loadLayersModel(INDEXEDDB_KEY);
-            updateStatus('Model loaded from cache.', 'success');
-        } catch (cacheErr) {
-            // Fallback: load from URL and then cache it
-            updateStatus('Downloading model...', 'loading');
-            cnnModel = await tf.loadLayersModel(MODEL_URL, {
-                onProgress: (fraction) => {
-                    const percent = Math.round(fraction * 100);
-                    updateStatus(`Downloading model... ${percent}%`, 'loading');
-                },
-                strict: false
-            });
-            try {
-                await cnnModel.save(INDEXEDDB_KEY);
-                updateStatus('Model cached locally for faster future loads.', 'success');
-            } catch (saveErr) {
-                console.warn('Failed to cache model:', saveErr);
-            }
-        }
-
-        // Warm-up prediction (correct input shape for MLP: [batch, 8])
-        const dummy = tf.zeros([1, 8]);
-        const out = cnnModel.predict(dummy);
-        if (Array.isArray(out)) out.forEach(t => t.dispose());
-        else out.dispose();
-        dummy.dispose();
-
-        modelReady = true;
-        maybeEnablePredict();
-
-    } catch (err) {
-        console.error(err);
-        updateStatus('Error loading model: ' + err.message, 'error');
-    }
-}
-
-function getInputs() {
-    return [
-        parseFloat(document.getElementById('relativeCompactness').value),
-        parseFloat(document.getElementById('surfaceArea').value),
-        parseFloat(document.getElementById('wallArea').value),
-        parseFloat(document.getElementById('roofArea').value),
-        parseFloat(document.getElementById('overallHeight').value),
-        parseFloat(document.getElementById('orientation').value),
-        parseFloat(document.getElementById('glazingArea').value),
-        parseFloat(document.getElementById('glazingDistribution').value)
-    ];
-}
-
-function standardize(values, meanArr, stdArr) {
-    return values.map((v, i) => (v - meanArr[i]) / stdArr[i]);
-}
-
-function inverseStandardize(values, meanArr, stdArr) {
-    return values.map((z, i) => z * stdArr[i] + meanArr[i]);
-}
-
-document.getElementById('predictionForm').addEventListener('submit', async function(e) {
-    e.preventDefault();
-    try {
-        if (!cnnModel || !scaler) {
-            updateStatus('Please wait for the model and scaler to finish loading.', 'error');
-            return;
-        }
-
-        const vals = getInputs();
-        if (vals.some(v => Number.isNaN(v))) {
-            updateStatus('Please enter valid numeric values for all fields.', 'error');
-            return;
-        }
-
-        updateStatus('Running inference...', 'loading');
-
-        const xStd = standardize(vals, scaler.X_mean, scaler.X_std);
-        const xTensor = tf.tensor2d([xStd], [1, 8]);
-
-        const pred = cnnModel.predict(xTensor);
-        let heatingStd, coolingStd;
-
-        if (Array.isArray(pred)) {
-            const hArr = await pred[0].data();
-            const cArr = await pred[1].data();
-            heatingStd = hArr[0];
-            coolingStd = cArr[0];
-            pred.forEach(t => t.dispose());
-        } else {
-            const arr = await pred.data();
-            heatingStd = arr[0];
-            coolingStd = arr[1];
-            pred.dispose();
-        }
-
-        xTensor.dispose();
-
-        const [heating, cooling] = inverseStandardize([heatingStd, coolingStd], scaler.Y_mean, scaler.Y_std);
-        const heatingClipped = Math.min(Math.max(heating, 6.0), 45.0);
-        const coolingClipped = Math.min(Math.max(cooling, 11.0), 48.0);
-
-        document.getElementById('heatingResult').textContent = heatingClipped.toFixed(2);
-        document.getElementById('coolingResult').textContent = coolingClipped.toFixed(2);
-        resultsContainer.classList.remove('hidden');
-
-        updateStatus(`Prediction complete | Heating: ${heatingClipped.toFixed(2)} kWh/m² | Cooling: ${coolingClipped.toFixed(2)} kWh/m²`, 'success');
-
-    } catch (err) {
-        console.error(err);
-        updateStatus('Prediction error: ' + err.message, 'error');
-    }
-});
-
-// Load model & scaler on page load
-window.addEventListener('load', () => { loadScaler(); loadModel(); });
-</script>
-
-            <div style="text-align: center; padding: 20px 15px; border-top: 2px solid #e0e0e0; margin-top: 20px;">
-                <p style="font-size: 0.85em; color: white; line-height: 1.6;">            This web application uses a trained Convolutional Neural Network (CNN)<br>
-            to predict building heating and cooling loads<br>
-            from eight design parameters.<br>
-            It provides fast estimates of the loads in kWh/m² and<br>
-            serves as a decision support tool for building<br>
-            and HVAC design.
-        </p>
-                
-                <p style="font-size: 0.85em; color: white; line-height: 1.6;">
-                    The model was trained on data defined over specific value ranges, so users should enter numerical values only within the indicated intervals for each input parameter (orientation: 2, 3, 4, 5 representing North, East, South, West orientations; glazing area distribution: 0, 1, 2, 3, 4, 5 representing different glazing distribution patterns). Predicted heating and cooling loads represent annual energy use in kWh/m² per year.
-                </p>
-        <p style="font-size: 0.9em; color: ##5568ff; font-weight: 600; margin-top: 15px;">
-            Developed by Derrick Mirindi
-        </p>
+    <div class="results-col">
+      <section class="panel results" aria-labelledby="h-results">
+        <div class="panel-head">
+          <h2 id="h-results">Model estimate</h2>
+          <p class="muted small" data-result-state>No prediction yet.</p>
+        </div>
+        <div class="kpis">
+          <div class="kpi kpi-heat">
+            <p class="kpi-label">Heating load</p>
+            <p class="kpi-value"><span data-out-heating>—</span> <span class="kpi-unit">kWh/m²<a href="#unit-note" class="fn">*</a></span></p>
+            <p class="kpi-flag" data-clip-heating hidden></p>
+          </div>
+          <div class="kpi kpi-cool">
+            <p class="kpi-label">Cooling load</p>
+            <p class="kpi-value"><span data-out-cooling>—</span> <span class="kpi-unit">kWh/m²<a href="#unit-note" class="fn">*</a></span></p>
+            <p class="kpi-flag" data-clip-cooling hidden></p>
+          </div>
+        </div>
+        <p class="note small" id="unit-note">* Unit as stated by the original project. The dataset documentation does not state the unit or the time basis (for example, annual). Heating and cooling are separate model outputs; their sum is not a whole-building energy use intensity.</p>
+        <ul class="checks" data-feasibility aria-label="Input consistency notes"></ul>
+        <div class="save-row" data-save-row hidden>
+          <label for="scenario-name" class="small">Save these inputs as a scenario</label>
+          <div class="inline">
+            <input id="scenario-name" type="text" maxlength="80" placeholder="e.g. Compact, 25% glazing" autocomplete="off">
+            <button type="button" class="btn" data-save-scenario>Save scenario</button>
+          </div>
+          <p class="small" data-save-status role="status" aria-live="polite"></p>
+        </div>
+      </section>
+      <section class="panel" aria-labelledby="h-schematic">
+        <div class="panel-head"><h2 id="h-schematic">Schematic</h2></div>
+        <div class="schematic" data-schematic></div>
+        <p class="caption">Schematic illustration—not a reconstructed building or BIM model. Drawn as an equivalent rectangular block whose footprint equals the roof area and whose perimeter is wall area ÷ height. Window bands scale with the glazing fraction; their direction is not shown because the distribution codes are not documented.</p>
+      </section>
     </div>
+  </div>
+</section>
+
+<!-- ============================================================ COMPARE -->
+<section class="view" id="view-compare" data-view="compare" aria-labelledby="h-compare" hidden>
+  <div class="view-head">
+    <h1 id="h-compare">Compare scenarios</h1>
+    <p class="lede">Save scenarios from the Predict tab, choose a baseline, and compare up to four side by side. Differences are differences between model estimates, not verified real-world energy savings.</p>
+  </div>
+  <div class="panel">
+    <div class="panel-head row">
+      <h2>Saved scenarios</h2>
+      <div class="toolbar">
+        <button type="button" class="btn btn-small" data-export-scen-csv>Export comparison CSV</button>
+        <button type="button" class="btn btn-small" data-export-json>Export project JSON</button>
+        <label class="btn btn-small file-btn">Import project JSON<input type="file" accept="application/json,.json" data-import-json></label>
+        <button type="button" class="btn btn-small btn-danger" data-delete-all>Delete all</button>
+      </div>
+    </div>
+    <p class="muted small" data-storage-note></p>
+    <p class="small" data-compare-status role="status" aria-live="polite"></p>
+    <div data-scenario-list></div>
+  </div>
+  <div class="panel" data-compare-panel hidden>
+    <div class="panel-head"><h2>Comparison</h2><p class="muted small" data-compare-sub></p></div>
+    <div class="compare-bars" data-compare-bars></div>
+    <div class="table-wrap"><table class="data compare-table" data-compare-table></table></div>
+  </div>
+</section>
+
+<!-- ============================================================ EXPLORE -->
+<section class="view" id="view-explore" data-view="explore" aria-labelledby="h-explore" hidden>
+  <div class="view-head">
+    <h1 id="h-explore">Parameter explorer</h1>
+    <p class="lede">Vary one or two inputs around the current Predict inputs and see how the model’s estimates respond. Every point is a separate prediction by the unchanged model.</p>
+  </div>
+  <div class="explore-grid">
+    <form class="panel" data-sweep-form novalidate>
+      <div class="panel-head"><h2>Sweep set-up</h2></div>
+      <fieldset class="seg">
+        <legend class="small">Mode</legend>
+        <label><input type="radio" name="mode" value="1" checked> One variable</label>
+        <label><input type="radio" name="mode" value="2"> Two variables (heatmap)</label>
+      </fieldset>
+      <div data-axis="x"></div>
+      <div data-axis="y" hidden></div>
+      <p class="small" data-sweep-count></p>
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary" data-sweep-run disabled>Run sweep</button>
+        <button type="button" class="btn" data-sweep-cancel hidden>Cancel</button>
+      </div>
+      <div class="progress" data-sweep-progress hidden><div class="progress-bar"><span></span></div><p class="small" role="status" aria-live="polite"></p></div>
+      <div class="base-summary small" data-base-summary></div>
+    </form>
+    <div class="sweep-results">
+      <div class="panel" data-sweep-out hidden>
+        <div class="panel-head row">
+          <div>
+            <h2 data-sweep-title>Results</h2>
+            <p class="muted small">Model response under the specified input changes. Not a causal effect, SHAP explanation or validated engineering sensitivity study.</p>
+          </div>
+          <button type="button" class="btn btn-small" data-export-sweep>Export sweep CSV</button>
+        </div>
+        <ul class="checks" data-sweep-warnings></ul>
+        <div class="chart-pair">
+          <figure class="chart"><figcaption><span class="sw sw-heat"></span>Heating load</figcaption><div class="chart-host" data-chart-heat></div></figure>
+          <figure class="chart"><figcaption><span class="sw sw-cool"></span>Cooling load</figcaption><div class="chart-host" data-chart-cool></div></figure>
+        </div>
+        <div class="best" data-sweep-best></div>
+        <details class="table-details"><summary>Show the data table</summary><div class="table-wrap" data-sweep-table></div></details>
+      </div>
+      <div class="panel empty" data-sweep-empty><p>Set up a sweep and press <strong>Run sweep</strong>. The current Predict inputs are used for every variable you do not vary.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ REPORTS -->
+<section class="view" id="view-reports" data-view="reports" aria-labelledby="h-reports" hidden>
+  <div class="view-head">
+    <h1 id="h-reports">Reports and exports</h1>
+    <p class="lede">Build a printable report from your current work. Use your browser’s print dialog to save it as a PDF.</p>
+  </div>
+  <div class="panel no-print">
+    <fieldset class="seg">
+      <legend class="small">Include</legend>
+      <label><input type="checkbox" data-rep="predict" checked> Current prediction</label>
+      <label><input type="checkbox" data-rep="compare" checked> Scenario comparison</label>
+      <label><input type="checkbox" data-rep="sweep" checked> Last parameter sweep</label>
+      <label><input type="checkbox" data-rep="methods" checked> Model, assumptions and limitations</label>
+    </fieldset>
+    <div class="form-actions">
+      <button type="button" class="btn btn-primary" data-print>Print or save as PDF</button>
+      <button type="button" class="btn" data-export-json-2>Export project JSON</button>
+    </div>
+    <p class="small muted">CSV exports are on the Compare and Parameter Explorer tabs.</p>
+  </div>
+  <article class="report" data-report aria-label="Report preview"></article>
+</section>
+
+<!-- ============================================================ METHODS -->
+<section class="view" id="view-methods" data-view="methods" aria-labelledby="h-methods" hidden>
+  <div class="view-head">
+    <h1 id="h-methods">Model &amp; methods</h1>
+    <p class="lede">What the model is, what it receives, how predictions are computed in this page, and where its limits are.</p>
+  </div>
+  <div class="methods">
+    <section class="panel">
+      <h2>Architecture</h2>
+      <p>A fully connected neural network (multilayer perceptron), verified from <code>model.json</code>:</p>
+      <ol class="arch">
+        <li>Input: 8 standardised features</li>
+        <li>Dense 256 → batch normalisation → ReLU → dropout 0.3</li>
+        <li>Dense 128 → batch normalisation → ReLU → dropout 0.3</li>
+        <li>Dense 64 → batch normalisation → ReLU</li>
+        <li>Dense 2 (linear): standardised heating and cooling load</li>
+      </ol>
+      <p class="small muted">Earlier versions of this site described the model as a convolutional neural network (CNN). The saved model has no convolutional layers. Dropout is inactive when predicting. Built with Keras 3.10.0; converted with TensorFlow.js Converter 4.22.0.</p>
+    </section>
+    <section class="panel">
+      <h2>Inputs (model order)</h2>
+      <div class="table-wrap"><table class="data" data-feature-table></table></div>
+    </section>
+    <section class="panel">
+      <h2>Inference in this page</h2>
+      <ol class="steps">
+        <li>Each input is standardised: <code>(x − mean) / std</code>, using the eight means and standard deviations in <code>scaler_params.json</code>.</li>
+        <li>The values are passed as one 1 × 8 float32 tensor to the model in TensorFlow.js.</li>
+        <li>The two outputs are converted back: <code>z × std + mean</code> (heating, then cooling).</li>
+        <li>Outputs are clipped to 6.0–45.0 (heating) and 11.0–48.0 (cooling) and shown with two decimals. When clipping changes a value, the studio says so.</li>
+      </ol>
+      <p class="small">These steps, the files and the clipping limits are unchanged from the original application. A single adapter (<code>assets/js/inference.js</code>) performs them for every feature of the studio. For sweeps it predicts in batches only after checking, on your device, that batched results are bit-for-bit identical to one-at-a-time results.</p>
+    </section>
+    <section class="panel">
+      <h2>Runtime and model identity</h2>
+      <div class="table-wrap"><table class="data" data-runtime-table></table></div>
+      <div class="form-actions">
+        <button type="button" class="btn btn-small" data-verify-files>Verify model files (SHA-256)</button>
+        <button type="button" class="btn btn-small btn-ghost" data-clear-cache>Clear this browser’s model cache</button>
+        <a class="btn btn-small btn-ghost" href="tests/regression.html">Run the regression test</a>
+      </div>
+      <p class="small" data-verify-out role="status" aria-live="polite"></p>
+    </section>
+    <section class="panel">
+      <h2>Training data and supported domain</h2>
+      <p>The eight inputs and their values match the public <a href="https://archive.ics.uci.edu/dataset/242/energy+efficiency" rel="noopener">UCI “Energy efficiency” dataset</a> (A. Tsanas and A. Xifara, 2012; CC BY 4.0): 768 residential buildings simulated in Ecotect for Athens, Greece, from 12 building forms, 4 orientations and several glazing options. The scaler statistics correspond to a 537-row subset (70 % of 768). The training procedure, split and accuracy of this specific model are not documented in this repository, so no accuracy figures are shown here.</p>
+      <p>Supported values: see the input table. Each input can be in range while the combination is unlike any training building; the studio flags combinations that are not one of the 12 dataset forms, break the dataset relation <em>surface area = wall area + 2 × roof area</em>, use heights other than 3.5 m or 7.0 m, or pair glazing code 0 with non-zero glazing. Passing these checks does not prove a design is within the training distribution.</p>
+    </section>
+    <section class="panel">
+      <h2>Units, codes and open questions</h2>
+      <ul class="plain">
+        <li><strong>Units and time basis.</strong> The original site reports kWh/m² and describes annual energy use. Neither the dataset page nor the source paper states the unit or time basis, so this is shown with a caveat.</li>
+        <li><strong>Orientation codes 2–5.</strong> The original site described these as North, East, South and West. The dataset documentation does not define the codes.</li>
+        <li><strong>Glazing distribution codes 0–5.</strong> The source paper describes no glazing, uniform glazing, and glazing concentrated on the north, east, south or west side, but not which code is which.</li>
+        <li><strong>Glazing area.</strong> The source paper defines it as a percentage of floor area; the original site described it as a share of the façade.</li>
+      </ul>
+    </section>
+    <section class="panel">
+      <h2>Limitations</h2>
+      <ul class="plain">
+        <li>This is a data-driven estimator trained on simulated buildings, not an EnergyPlus or other physics-based simulation, and not a replacement for one.</li>
+        <li>It receives only the eight inputs above. Climate, location, materials, HVAC systems, occupancy and schedules are fixed by the training data and cannot be changed here.</li>
+        <li>No monthly or hourly profiles, cost, carbon, code-compliance or HVAC-sizing results are produced.</li>
+        <li>No uncertainty intervals are available. Clipped outputs are shown at the clip limit and flagged.</li>
+        <li>“Lowest tested” in the explorer means lowest among the evaluated points, not a globally optimal building.</li>
+      </ul>
+    </section>
+  </div>
+</section>
+</main>
+
+<footer class="footer">
+  <div class="footer-inner">
+    <p><strong>Developed by Derrick Mirindi.</strong></p>
+    <p class="small">Model estimates for exploration and teaching. Not for code compliance, HVAC sizing or design sign-off. Training data: Tsanas &amp; Xifara (2012), UCI Machine Learning Repository, CC BY 4.0. Runs entirely in your browser; saved scenarios stay in this browser unless you export them.</p>
+  </div>
+</footer>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
