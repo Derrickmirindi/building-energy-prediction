@@ -259,7 +259,7 @@ code { overflow-wrap: anywhere; }
   .scn-table td:nth-child(3) { flex: 1 1 100%; min-width: 0; order: -1; }
   .scn-table td[data-label]::before { content: attr(data-label); display: block; font-size: .72rem; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
 }
-.compare-table thead th { text-transform: none; letter-spacing: 0; font-size: .82rem; color: var(--ink); }
+table.data.compare-table thead th { text-transform: none; letter-spacing: 0; font-size: .82rem; color: var(--ink); }
 .pos, .neg { color: inherit; }
 .results { scroll-margin-top: 130px; }
 @media (max-width: 760px) { .results { scroll-margin-top: 150px; } }
