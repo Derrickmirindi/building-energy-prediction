@@ -268,3 +268,9 @@ table.data.compare-table thead th { text-transform: none; letter-spacing: 0; fon
 @media (max-width: 760px) { .results { scroll-margin-top: 150px; } }
 .b-dim-light { fill: #fff; paint-order: stroke; stroke: rgba(20,24,30,.45); stroke-width: 3px; }
 .schematic { background: #6f7884; }
+/* centred header, menu and page headings (owner's request) */
+.topbar-inner { justify-content: center; text-align: center; }
+.brand { justify-content: center; }
+.tabs { justify-content: center; }
+.view-head { margin-left: auto; margin-right: auto; text-align: center; }
+@media (max-width: 760px) { .tabs { justify-content: flex-start; } }
