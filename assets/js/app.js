@@ -557,16 +557,6 @@ function renderReport() {
       parts.push(h('ul', { class: 'plain small' }, sweepWarnings(sw).map((n) => h('li', { text: n.text }))));
     }
   }
-  if (inc('methods')) {
-    parts.push(h('h2', { text: 'Model, assumptions and limitations' }),
-      h('ul', { class: 'plain small' },
-        h('li', { text: 'Model: fully connected neural network (8 → 256 → 128 → 64 → 2 with batch normalisation and ReLU), unchanged from the original application. Files verified by SHA-256 in the repository tests.' }),
-        h('li', { text: 'Inputs are standardised with the stored scaler; outputs are inverse-transformed and clipped to 6.0–45.0 (heating) and 11.0–48.0 (cooling).' }),
-        h('li', { text: 'Training data inputs match the UCI “Energy efficiency” dataset (Tsanas & Xifara 2012): simulated residential buildings in Athens, Greece, 12 building forms. The model receives no climate, material, HVAC or occupancy inputs.' }),
-        h('li', { text: '* Units: kWh/m² as stated by the original project; the dataset documentation does not state the unit or time basis. Orientation and glazing-distribution code meanings are not documented in the dataset.' }),
-        h('li', { text: 'Heating plus cooling is not a whole-building energy use intensity. No uncertainty intervals, accuracy figures, costs, carbon, code compliance or HVAC sizing are provided.' }),
-        h('li', { text: 'This is not an EnergyPlus or physics-based simulation.' })));
-  }
   host.replaceChildren(...parts);
 }
 $$('[data-rep]').forEach((c) => c.addEventListener('change', renderReport));
