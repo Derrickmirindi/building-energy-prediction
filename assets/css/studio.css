@@ -85,8 +85,6 @@ main { max-width: 1320px; margin: 0 auto; padding: 24px 24px 48px; }
 .chip { font: .78rem/1 var(--sans); padding: 4px 7px; border-radius: 3px; border: 1px solid var(--line); background: #faf9f6; color: var(--ink-2); cursor: pointer; font-variant-numeric: tabular-nums; }
 .chip:hover { border-color: var(--char); color: var(--ink); }
 .chip[aria-pressed="true"] { background: var(--char); color: #fff; border-color: var(--char); }
-details.help { margin-top: 4px; }
-details.help summary { cursor: pointer; color: var(--ink-2); }
 .form-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
 .form-status { margin: 10px 0 0; font-size: .9rem; min-height: 1.4em; }
 .form-status.is-error { color: var(--err); font-weight: 600; }

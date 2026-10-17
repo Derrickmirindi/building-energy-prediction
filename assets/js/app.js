@@ -76,8 +76,7 @@ function buildFields() {
       ...f.dataset.map((d) => h('button', { type: 'button', class: 'chip', 'data-set': f.key, 'data-value': String(d), 'aria-pressed': 'false', disabled: (d < f.min || d > f.max) ? true : null, title: (d < f.min || d > f.max) ? 'Dataset value outside the supported input range' : null, text: String(d) }))) : null;
     const meta = h('div', { class: 'field-meta', id: `${id}-meta` },
       f.kind === 'category' ? h('span', { class: 'range', text: `Categorical code: ${f.codes.join(', ')}` }) : h('span', { class: 'range', text: `Supported ${f.min}–${f.max}${f.unit !== '–' && f.unit !== 'fraction' ? ' ' + f.unit : ''} · dataset values:` }),
-      chips,
-      h('details', { class: 'help' }, h('summary', { text: 'About this input' }), h('p', { text: f.help }), f.note ? h('p', { text: f.note }) : null));
+      chips);
     fieldsHost.append(h('div', { class: 'field', 'data-field': f.key },
       h('span', { class: 'field-n', 'aria-hidden': 'true', text: String(i + 1).padStart(2, '0') }),
       h('label', { class: 'field-label', for: id }, f.name, ' ', h('span', { class: 'unit', text: f.unit === '–' ? '(dimensionless)' : f.unit === 'code' ? '(code)' : f.unit === 'fraction' ? '(fraction)' : `(${f.unit})` })),
