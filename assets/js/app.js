@@ -31,7 +31,7 @@ function route() {
   if (tab === 'reports') renderReport();
   if (tab === 'explore') { renderBaseSummary(); updateSweepCount(); }
   if (tab === 'compare') renderCompare();
-  document.title = `${$(`[data-tab="${tab}"]`).textContent.replace(/\d+/g, '').trim()} — Building Energy Design Studio`;
+  document.title = `${$(`[data-tab="${tab}"]`).textContent.replace(/\d+/g, '').trim()} — Building Energy Prediction`;
 }
 window.addEventListener('hashchange', () => { route(); $('main').focus({ preventScroll: true }); });
 $('main').tabIndex = -1;
@@ -306,7 +306,7 @@ function download(name, mime, text) {
   const a = h('a', { href: url, download: name }); document.body.append(a); a.click(); a.remove();
   setTimeout(() => URL.revokeObjectURL(url), 4000);
 }
-function meta() { return { generator: 'Building Energy Design Studio', model: M.MODEL_ID, backend: M.snapshot().backend, tfjs: M.snapshot().tfjs, unitNote: 'Unit as stated by the original project (kWh/m²); unit and time basis are not stated in the dataset documentation.' }; }
+function meta() { return { generator: 'Building Energy Prediction', model: M.MODEL_ID, backend: M.snapshot().backend, tfjs: M.snapshot().tfjs, unitNote: 'Unit as stated by the original project (kWh/m²); unit and time basis are not stated in the dataset documentation.' }; }
 $('[data-export-scen-csv]').addEventListener('click', () => {
   const p = Store.get(); const st = $('[data-compare-status]');
   if (!p.scenarios.length) { st.textContent = 'There are no scenarios to export.'; return; }
@@ -522,7 +522,7 @@ function renderReport() {
   const inc = (k) => $(`[data-rep="${k}"]`).checked;
   const s = M.snapshot();
   const parts = [h('div', { class: 'rep-head' },
-    h('div', {}, h('p', { class: 'rep-title', text: 'Building Energy Design Studio — report' }), h('p', { class: 'small', text: 'Model estimates of heating and cooling load. Developed by Derrick Mirindi.' })),
+    h('div', {}, h('p', { class: 'rep-title', text: 'Building Energy Prediction — report' }), h('p', { class: 'small', text: 'Model estimates of heating and cooling load. Developed by Derrick Mirindi.' })),
     h('div', { class: 'rep-meta' }, h('div', { text: `Generated ${new Date().toLocaleString()}` }), h('div', { text: `Model: ${M.MODEL_ID}` }), h('div', { text: `Runtime: TensorFlow.js ${s.tfjs || '–'}, ${s.backend || '–'} backend` })))];
   if (inc('predict')) {
     parts.push(h('h2', { text: 'Current prediction' }));
