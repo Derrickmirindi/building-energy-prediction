@@ -30,18 +30,6 @@ Developed by Derrick Mirindi.
 
 Changing inputs makes the previous prediction stale. Camera controls change only the visualization, never the model inputs or outputs.
 
-### What the 3D widgets mean
-
-The building viewer is a lightweight SVG projection of 3D geometry with drag-to-orbit, keyboard-accessible sliders, zoom, reset and wireframe controls. It requires no additional rendering library or WebGL context.
-
-Its rectangular footprint is derived from roof area, wall area and height. If those values cannot define a rectangle, it displays a square-footprint fallback and a warning. This is an illustrative mass, not a reconstruction of the dataset building or a BIM model.
-
-Window patches vary illustratively with the glazing input; they do not encode a verified facade glazing ratio or glazing-distribution mapping. Orientation and distribution codes remain categorical inputs: no unverified cardinal-direction mapping is invented. Relative compactness and surface area do not uniquely determine the rendered geometry.
-
-The separate envelope-area widget displays surface, wall and roof input areas as 3D bars. It is not an energy balance, a feature-importance chart or a thermal map. Existing numeric results and data tables remain the authoritative displays.
-
-Interactive widgets run on the live website, not inside this README.
-
 ## Model and scientific scope
 
 ### Preserved prediction pipeline
@@ -115,27 +103,12 @@ python3 -m http.server 8000
 
 Open [the local studio](http://localhost:8000/). An internet connection is needed to load TensorFlow.js from jsDelivr.
 
-### Check model preservation
-
-With Node.js 18 or newer:
-
-```bash
-node --test tests/*.test.mjs
-```
-
-These tests cover protected-file checksums, the inference pipeline, validation and import/export. Then open [the browser regression runner](tests/regression.html) through the local server to evaluate the 18 recorded baseline cases using real TensorFlow.js.
-
-Displayed values must match exactly. Raw values may differ by at most 2 × 10⁻⁵ between backends. A visual-only change still needs browser checks: mouse, touch and keyboard interaction; narrow screens; all four tabs; export/import; and report printing. Test commands are not a claim that this revision has passed them.
 
 ### Design implementation
 
 The interface uses a black, grey and red palette, a structured grid, system sans-serif typography and high-contrast controls. Existing heating/cooling colors remain distinct for chart continuity.
 
 `assets/js/building.js` retains the `drawBuilding(host, values)` and `blockDims(roofArea, wallArea, height)` interfaces and loads `assets/css/design.css` as a presentation-only enhancement. The existing inference, validation, storage and application-routing modules are unchanged. The viewer renders on interaction rather than running a continuous animation loop.
-
-### GitHub Pages
-
-The documented deployment configuration is the `main` branch, repository root, using Deploy from a branch. Publishing changes to `main` updates the site through GitHub Pages; there is no application build step. Keep paths relative so the site works under `/building-energy-prediction/`.
 
 ## Privacy and maintenance
 
